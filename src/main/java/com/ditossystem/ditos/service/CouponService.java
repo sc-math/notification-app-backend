@@ -63,6 +63,7 @@ public class CouponService {
             existing.setLimit(newCoupon.getLimit());
             existing.setQuantity(newCoupon.getQuantity());
             existing.setActive(newCoupon.isActive());
+            existing.setExpirationDate(newCoupon.getExpirationDate());
 
             Coupon updated = saveCoupon(existing);
             return Optional.ofNullable(updated);

@@ -1,10 +1,13 @@
 package com.ditossystem.ditos.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 @Document(collection = "coupon")
 @NoArgsConstructor
@@ -27,7 +30,8 @@ public class Coupon {
     private double minValue;
     private double maxDiscount;
     private int limit;
-    // TODO: private Date
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime expirationDate;
     private int quantity;
     private boolean active;
 
@@ -85,6 +89,14 @@ public class Coupon {
 
     public void setLimit(int limit) {
         this.limit = limit;
+    }
+
+    public LocalDateTime getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(LocalDateTime expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
     public int getQuantity() {
