@@ -20,6 +20,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Permite acesso ao GET /coupons e /notification para qualquer usuário
                 .requestMatchers(HttpMethod.GET, "/coupons").permitAll()
                 .requestMatchers(HttpMethod.GET, "/notifications").permitAll()
