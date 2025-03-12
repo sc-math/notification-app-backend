@@ -34,7 +34,8 @@ public record CouponPrivateDTO(
         );
     }
 
-    public Coupon applyToEntity(Coupon coupon){
+    public Coupon ToEntity(){
+        Coupon coupon = new Coupon();
         coupon.setCode(this.code);
         coupon.setName(this.name);
         coupon.setDiscount(this.discount);

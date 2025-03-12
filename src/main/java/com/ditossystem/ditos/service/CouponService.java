@@ -22,8 +22,7 @@ public class CouponService {
 
     // Método para criar cupons
     public CouponPrivateDTO saveCoupon(CouponPrivateDTO couponDTO){
-        Coupon newCoupon = new Coupon();
-        couponDTO.applyToEntity(newCoupon);
+        Coupon newCoupon = couponDTO.ToEntity();
         Coupon savedCoupon = couponRepository.save(newCoupon);
         return CouponPrivateDTO.fromEntity(savedCoupon);
     }
@@ -59,8 +58,8 @@ public class CouponService {
     public Optional<CouponPrivateDTO> updateCoupon(String id, CouponPrivateDTO newCoupon){
         return couponRepository.findById(id)
                 .map(existingCoupon -> {
-                    Coupon updatedCoupon = newCoupon.applyToEntity(existingCoupon);
-                    return  couponRepository.save(updatedCoupon);
+                    existingCoupon = newCoupon.ToEntity();
+                    return  couponRepository.save(existingCoupon);
                 }).map(CouponPrivateDTO::fromEntity);
     }
 
