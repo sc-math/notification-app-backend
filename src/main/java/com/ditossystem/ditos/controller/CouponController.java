@@ -39,7 +39,7 @@ public class CouponController {
     // Método Get All
     // Endpoint para listar todos os cupons (GET)
     @GetMapping
-    public ResponseEntity<List<Coupon>> getAllCoupons(){
+    public ResponseEntity<?> getAllCoupons(){
 
         return securityUtils.isAuthenticated()
                 ? ResponseEntity.ok(couponService.getAllCoupons())

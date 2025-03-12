@@ -1,10 +1,10 @@
 package com.ditossystem.ditos.service;
 
 import com.ditossystem.ditos.domain.coupon.Coupon;
+import com.ditossystem.ditos.domain.coupon.CouponPrivateDTO;
+import com.ditossystem.ditos.domain.coupon.CouponPublicDTO;
 import com.ditossystem.ditos.repository.CouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,13 +26,17 @@ public class CouponService {
     }
 
     // Método para buscar todos os cupons
-    public List<Coupon> getAllCoupons(){
-        return couponRepository.findAll();
+    public List<CouponPrivateDTO> getAllCoupons(){
+        return couponRepository.findAll().stream()
+                .map(CouponPrivateDTO::fromEntity)
+                .toList();
     }
 
     // Método para buscar todos os cupons ativos
-    public List<Coupon> getActiveCoupons(){
-        return couponRepository.findByActiveTrue();
+    public List<CouponPublicDTO> getActiveCoupons(){
+        return couponRepository.findByActiveTrue().stream()
+                .map(CouponPublicDTO::fromEntity)
+                .toList();
     }
 
     // Método para buscar os cupons pelo mesmo código
