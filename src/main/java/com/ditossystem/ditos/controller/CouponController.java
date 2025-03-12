@@ -36,6 +36,7 @@ public class CouponController {
     }
 
     // MÉTODOS GETS
+    // Método Get All
     // Endpoint para listar todos os cupons (GET)
     @GetMapping
     public ResponseEntity<List<Coupon>> getAllCoupons(){

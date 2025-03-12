@@ -25,16 +25,14 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    // Método para buscar todas as notificações ou só as ativas
+    // Método para buscar todas as notificações
     public List<Notification> getAllNotifications(){
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if("mobile".equals(auth.getPrincipal())){
-            return notificationRepository.findByActiveTrue();
-        }
-
         return notificationRepository.findAll();
+    }
+
+    // Método para buscar todas as notificações ativas
+    public List<Notification> getActiveNotifications(){
+        return notificationRepository.findByActiveTrue();
     }
 
     // Método para buscar um notificação pelo id

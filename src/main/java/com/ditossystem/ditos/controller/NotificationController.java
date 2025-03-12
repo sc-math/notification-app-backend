@@ -1,6 +1,7 @@
 package com.ditossystem.ditos.controller;
 
 import com.ditossystem.ditos.domain.notification.Notification;
+import com.ditossystem.ditos.infra.security.SecurityUtils;
 import com.ditossystem.ditos.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,12 @@ import java.util.Optional;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final SecurityUtils securityUtils;
 
     @Autowired
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(NotificationService notificationService, SecurityUtils securityUtils) {
         this.notificationService = notificationService;
+        this.securityUtils = securityUtils;
     }
 
     // MÉTODO POST
@@ -34,9 +37,9 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<List<Notification>> getAllNotifications(){
 
-        List<Notification> notifications = notificationService.getAllNotifications();
-
-        return ResponseEntity.ok(notifications);
+        return securityUtils.isAuthenticated()
+                ? ResponseEntity.ok(notificationService.getAllNotifications())
+                : ResponseEntity.ok(notificationService.getActiveNotifications());
     }
 
     // Método Get By Id

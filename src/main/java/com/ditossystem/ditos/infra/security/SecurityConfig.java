@@ -1,6 +1,5 @@
 package com.ditossystem.ditos.infra.security;
 
-import com.ditossystem.ditos.domain.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,19 +37,20 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/coupons").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/notifications").permitAll()
-                                .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
 
-//                        // Permite acesso ao GET /coupons e /notification para qualquer usuário
-//                        .requestMatchers(HttpMethod.GET, "/coupons").permitAll()
-//                        .requestMatchers(HttpMethod.GET, "/notifications").permitAll()
-//                        // Qualquer outra requisição precisa ser autenticada
-//                        .requestMatchers("/**").hasAuthority("desktop"))
-//                .addFilterBefore(new AuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                        .requestMatchers(HttpMethod.GET, "/coupons").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/coupons").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.PUT, "/coupons/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.DELETE, "/coupons/**").hasAnyRole("ADMIN", "USER")
 
+                        .requestMatchers(HttpMethod.GET, "/notifications").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/notifications").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.PUT, "/notifications/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.DELETE, "/notifications").hasAnyRole("ADMIN", "USER")
+
+                        .anyRequest().authenticated()
                 )
                 .anonymous(AbstractHttpConfigurer::disable)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
