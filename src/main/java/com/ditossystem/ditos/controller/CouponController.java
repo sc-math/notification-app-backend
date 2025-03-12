@@ -1,10 +1,13 @@
 package com.ditossystem.ditos.controller;
 
 import com.ditossystem.ditos.domain.coupon.Coupon;
+import com.ditossystem.ditos.infra.security.SecurityUtils;
 import com.ditossystem.ditos.service.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,13 +18,16 @@ import java.util.Optional;
 public class CouponController {
 
     private final CouponService couponService;
+    private final SecurityUtils securityUtils;
+
 
     @Autowired
-    public CouponController(CouponService couponService) {
+    public CouponController(CouponService couponService, SecurityUtils securityUtils) {
         this.couponService = couponService;
+        this.securityUtils = securityUtils;
     }
 
-    // MÉTODO POST
+    // MÉTODOS POST
     @PostMapping
     public ResponseEntity<Coupon> createCoupon(@RequestBody Coupon coupon){
         Coupon savedCoupon = couponService.saveCoupon(coupon);
@@ -34,9 +40,9 @@ public class CouponController {
     @GetMapping
     public ResponseEntity<List<Coupon>> getAllCoupons(){
 
-        List<Coupon> coupons = couponService.getAllCoupons();
-
-        return ResponseEntity.ok(coupons); //Retorna a lista de cupons com o status de 200 (OK)
+        return securityUtils.isAuthenticated()
+                ? ResponseEntity.ok(couponService.getAllCoupons())
+                : ResponseEntity.ok(couponService.getActiveCoupons());
     }
 
     // Endpoint para buscar cupons que possuem o mesmo código (GET)

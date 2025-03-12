@@ -25,16 +25,14 @@ public class CouponService {
         return couponRepository.save(coupon);
     }
 
-    // Método para buscar todos os cupons ou só os ativos
+    // Método para buscar todos os cupons
     public List<Coupon> getAllCoupons(){
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if("mobile".equals(auth.getPrincipal())) {
-            return couponRepository.findByActiveTrue();
-        }
-
         return couponRepository.findAll();
+    }
+
+    // Método para buscar todos os cupons ativos
+    public List<Coupon> getActiveCoupons(){
+        return couponRepository.findByActiveTrue();
     }
 
     // Método para buscar os cupons pelo mesmo código

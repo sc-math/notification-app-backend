@@ -1,9 +1,7 @@
 package com.ditossystem.ditos.controller;
 
-import com.ditossystem.ditos.domain.user.AuthenticationDTO;
-import com.ditossystem.ditos.domain.user.RegisterDTO;
-import com.ditossystem.ditos.domain.user.User;
-import com.ditossystem.ditos.domain.user.UserRole;
+import com.ditossystem.ditos.domain.user.*;
+import com.ditossystem.ditos.infra.security.TokenService;
 import com.ditossystem.ditos.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,16 +22,18 @@ public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final  PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
     @Autowired
     public AuthenticationController(
             AuthenticationManager authenticationManager,
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder
-    ) {
+            PasswordEncoder passwordEncoder,
+            TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
@@ -41,7 +41,9 @@ public class AuthenticationController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
-        return ResponseEntity.ok().build();
+        var token = tokenService.generateToken((User) auth.getPrincipal());
+
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")
