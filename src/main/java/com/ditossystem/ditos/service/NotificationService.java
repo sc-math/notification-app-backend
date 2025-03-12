@@ -1,6 +1,6 @@
 package com.ditossystem.ditos.service;
 
-import com.ditossystem.ditos.model.Notification;
+import com.ditossystem.ditos.domain.notification.Notification;
 import com.ditossystem.ditos.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

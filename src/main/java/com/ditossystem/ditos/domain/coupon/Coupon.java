@@ -1,4 +1,4 @@
-package com.ditossystem.ditos.model;
+package com.ditossystem.ditos.domain.coupon;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

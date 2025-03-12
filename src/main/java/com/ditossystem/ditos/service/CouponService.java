@@ -1,6 +1,6 @@
 package com.ditossystem.ditos.service;
 
-import com.ditossystem.ditos.model.Coupon;
+import com.ditossystem.ditos.domain.coupon.Coupon;
 import com.ditossystem.ditos.repository.CouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

@@ -1,6 +1,6 @@
 package com.ditossystem.ditos.controller;
 
-import com.ditossystem.ditos.model.Notification;
+import com.ditossystem.ditos.domain.notification.Notification;
 import com.ditossystem.ditos.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,6 @@
 package com.ditossystem.ditos.repository;
 
-import com.ditossystem.ditos.model.Coupon;
+import com.ditossystem.ditos.domain.coupon.Coupon;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

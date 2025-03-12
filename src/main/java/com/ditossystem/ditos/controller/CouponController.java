@@ -1,6 +1,6 @@
 package com.ditossystem.ditos.controller;
 
-import com.ditossystem.ditos.model.Coupon;
+import com.ditossystem.ditos.domain.coupon.Coupon;
 import com.ditossystem.ditos.service.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
