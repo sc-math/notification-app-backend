@@ -33,4 +33,18 @@ public record CouponPrivateDTO(
                 coupon.isActive()
         );
     }
+
+    public Coupon applyToEntity(Coupon coupon){
+        coupon.setCode(this.code);
+        coupon.setName(this.name);
+        coupon.setDiscount(this.discount);
+        coupon.setDiscountType(this.discountType);
+        coupon.setMinValue(this.minValue);
+        coupon.setMaxDiscount(this.maxDiscount);
+        coupon.setLimit(this.limit);
+        coupon.setExpirationDate(this.expirationDate);
+        coupon.setQuantity(this.quantity);
+        coupon.setActive(this.active);
+        return coupon;
+    }
 }

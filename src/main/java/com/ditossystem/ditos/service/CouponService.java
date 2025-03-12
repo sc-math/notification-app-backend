@@ -21,8 +21,11 @@ public class CouponService {
     }
 
     // Método para criar cupons
-    public Coupon saveCoupon(Coupon coupon){
-        return couponRepository.save(coupon);
+    public CouponPrivateDTO saveCoupon(CouponPrivateDTO couponDTO){
+        Coupon newCoupon = new Coupon();
+        couponDTO.applyToEntity(newCoupon);
+        Coupon savedCoupon = couponRepository.save(newCoupon);
+        return CouponPrivateDTO.fromEntity(savedCoupon);
     }
 
     // Método para buscar todos os cupons
@@ -40,38 +43,25 @@ public class CouponService {
     }
 
     // Método para buscar os cupons pelo mesmo código
-    public List<Coupon> getCouponByCode(String code){
-        return couponRepository.findByCode(code);
+    public List<CouponPrivateDTO> getCouponByCode(String code){
+        return couponRepository.findByCode(code).stream()
+                .map(CouponPrivateDTO::fromEntity)
+                .toList();
     }
 
     // Método para buscar um cupom pelo Id
-    public Optional<Coupon> getCouponById(String id){
-        return couponRepository.findById(id);
+    public Optional<CouponPrivateDTO> getCouponById(String id){
+        return couponRepository.findById(id)
+                .map(CouponPrivateDTO::fromEntity);
     }
 
     // Método para atualizar um cupom pelo Id
-    public Optional<Coupon> updateCoupon(String id, Coupon newCoupon){
-        Optional<Coupon> existingCoupon = couponRepository.findById(id);
-
-        if(existingCoupon.isPresent()){
-            Coupon existing = existingCoupon.get();
-
-            existing.setCode(newCoupon.getCode());
-            existing.setName(newCoupon.getName());
-            existing.setDiscount(newCoupon.getDiscount());
-            existing.setDiscountType(newCoupon.getDiscountType());
-            existing.setMinValue(newCoupon.getMinValue());
-            existing.setMaxDiscount(newCoupon.getMaxDiscount());
-            existing.setLimit(newCoupon.getLimit());
-            existing.setQuantity(newCoupon.getQuantity());
-            existing.setActive(newCoupon.isActive());
-            existing.setExpirationDate(newCoupon.getExpirationDate());
-
-            Coupon updated = saveCoupon(existing);
-            return Optional.ofNullable(updated);
-        }
-
-        return Optional.empty();
+    public Optional<CouponPrivateDTO> updateCoupon(String id, CouponPrivateDTO newCoupon){
+        return couponRepository.findById(id)
+                .map(existingCoupon -> {
+                    Coupon updatedCoupon = newCoupon.applyToEntity(existingCoupon);
+                    return  couponRepository.save(updatedCoupon);
+                }).map(CouponPrivateDTO::fromEntity);
     }
 
     public boolean deleteCoupon(String id){

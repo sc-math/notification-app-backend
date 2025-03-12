@@ -1,6 +1,7 @@
 package com.ditossystem.ditos.controller;
 
 import com.ditossystem.ditos.domain.coupon.Coupon;
+import com.ditossystem.ditos.domain.coupon.CouponPrivateDTO;
 import com.ditossystem.ditos.infra.security.SecurityUtils;
 import com.ditossystem.ditos.service.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,8 @@ public class CouponController {
 
     // MÉTODOS POST
     @PostMapping
-    public ResponseEntity<Coupon> createCoupon(@RequestBody Coupon coupon){
-        Coupon savedCoupon = couponService.saveCoupon(coupon);
+    public ResponseEntity<CouponPrivateDTO> createCoupon(@RequestBody CouponPrivateDTO couponDTO){
+        CouponPrivateDTO savedCoupon = couponService.saveCoupon(couponDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCoupon);
     }
@@ -49,9 +50,9 @@ public class CouponController {
     // Endpoint para buscar cupons que possuem o mesmo código (GET)
     // /api/coupons/search?code=<code>
     @GetMapping("/search")
-    public ResponseEntity<List<Coupon>> getCouponsByCode(@RequestParam String code){
+    public ResponseEntity<List<CouponPrivateDTO>> getCouponsByCode(@RequestParam String code){
 
-        List<Coupon> coupons = couponService.getCouponByCode(code);
+        List<CouponPrivateDTO> coupons = couponService.getCouponByCode(code);
 
         return coupons.isEmpty()
                 ? ResponseEntity.status(HttpStatus.NOT_FOUND).build()
@@ -60,8 +61,8 @@ public class CouponController {
 
     // Endpoint para buscar um cupom pelo id (GET)
     @GetMapping("/{id}")
-    public ResponseEntity<Coupon> getCouponById(@PathVariable String id){
-        Optional<Coupon> coupon = couponService.getCouponById(id);
+    public ResponseEntity<CouponPrivateDTO> getCouponById(@PathVariable String id){
+        Optional<CouponPrivateDTO> coupon = couponService.getCouponById(id);
 
         return coupon
                 .map(ResponseEntity::ok)
@@ -71,13 +72,11 @@ public class CouponController {
     // MÉTODO PUT
     // Endpoint para editar um Cupom (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Coupon> updateCoupon(@PathVariable String id, @RequestBody Coupon coupon){
-        Optional<Coupon> result = couponService.updateCoupon(id, coupon);
+    public ResponseEntity<CouponPrivateDTO> updateCoupon(@PathVariable String id, @RequestBody CouponPrivateDTO couponDTO){
 
-        return result
+        return couponService.updateCoupon(id, couponDTO)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-
     }
 
     // MÉTODO DELETE
