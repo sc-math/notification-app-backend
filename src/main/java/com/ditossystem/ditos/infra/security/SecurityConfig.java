@@ -50,6 +50,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/notifications/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.DELETE, "/notifications").hasAnyRole("ADMIN", "USER")
 
+                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users").hasAnyRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .anonymous(AbstractHttpConfigurer::disable)

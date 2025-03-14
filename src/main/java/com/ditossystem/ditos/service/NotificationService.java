@@ -52,7 +52,7 @@ public class NotificationService {
         return notificationRepository.findById(id)
                 .map(existing -> {
                     Notification updated = notificationDTO.toEntity();
-                    updated.setId(id); // Garante que o ID seja mantido
+                    updated.setId(existing.getId()); // Garante que o ID seja mantido
                     return notificationRepository.save(updated);
                 })
                 .map(NotificationPrivateDTO::fromEntity);

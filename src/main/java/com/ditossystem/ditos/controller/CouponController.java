@@ -48,7 +48,7 @@ public class CouponController {
     }
 
     // Endpoint para buscar cupons que possuem o mesmo código (GET)
-    // /api/coupons/search?code=<code>
+    // /coupons/search?code=<code>
     @GetMapping("/search")
     public ResponseEntity<List<CouponPrivateDTO>> getCouponsByCode(@RequestParam String code){
 

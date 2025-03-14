@@ -58,8 +58,9 @@ public class CouponService {
     public Optional<CouponPrivateDTO> updateCoupon(String id, CouponPrivateDTO newCoupon){
         return couponRepository.findById(id)
                 .map(existingCoupon -> {
-                    existingCoupon = newCoupon.ToEntity();
-                    return  couponRepository.save(existingCoupon);
+                    Coupon updated = newCoupon.ToEntity();
+                    updated.setId(existingCoupon.getId());
+                    return  couponRepository.save(updated);
                 }).map(CouponPrivateDTO::fromEntity);
     }
 
