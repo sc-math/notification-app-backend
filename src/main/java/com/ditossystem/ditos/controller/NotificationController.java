@@ -1,6 +1,8 @@
 package com.ditossystem.ditos.controller;
 
-import com.ditossystem.ditos.model.Notification;
+import com.ditossystem.ditos.domain.notification.Notification;
+import com.ditossystem.ditos.domain.notification.NotificationPrivateDTO;
+import com.ditossystem.ditos.infra.security.SecurityUtils;
 import com.ditossystem.ditos.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,63 +17,55 @@ import java.util.Optional;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final SecurityUtils securityUtils;
 
     @Autowired
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(NotificationService notificationService, SecurityUtils securityUtils) {
         this.notificationService = notificationService;
+        this.securityUtils = securityUtils;
     }
 
     // MÉTODO POST
     @PostMapping
-    public ResponseEntity<Notification> createNotification(@RequestBody Notification notification){
-        Notification savedNotification = notificationService.saveNotification(notification);
-
+    public ResponseEntity<NotificationPrivateDTO> createNotification(@RequestBody NotificationPrivateDTO notificationDTO) {
+        NotificationPrivateDTO savedNotification = notificationService.saveNotification(notificationDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedNotification);
     }
 
-    // MÉTODOS GETS
-    // Método Get All
+    // GET All: Retorna DTOs diferentes baseado na autenticação
     @GetMapping
-    public ResponseEntity<List<Notification>> getAllNotifications(){
-
-        List<Notification> notifications = notificationService.getAllNotifications();
-
-        return ResponseEntity.ok(notifications);
+    public ResponseEntity<?> getAllNotifications() {
+        return securityUtils.isAuthenticated()
+                ? ResponseEntity.ok(notificationService.getAllNotifications())
+                : ResponseEntity.ok(notificationService.getActiveNotifications());
     }
 
-    // Método Get By Id
+    // GET By ID: Retorna DTO privado se autenticado, ou 404 se não
     @GetMapping("/{id}")
-    public ResponseEntity<Notification> getNotificationById(@PathVariable String id){
-        Optional<Notification> notification = notificationService.getNotificationById(id);
-
-        return notification
+    public ResponseEntity<?> getNotificationById(@PathVariable String id) {
+        return notificationService.getNotificationById(id)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // MÉTODO PUT
-    // Endpoint para editar uma Notificação
+    // PUT: Aceita NotificationPrivateDTO
     @PutMapping("/{id}")
-    public ResponseEntity<Notification> updateNotification(@PathVariable String id, @RequestBody Notification notification){
-        Optional<Notification> result = notificationService.updateNotification(id, notification);
-
-        return result
+    public ResponseEntity<NotificationPrivateDTO> updateNotification(
+            @PathVariable String id,
+            @RequestBody NotificationPrivateDTO notificationDTO
+    ) {
+        return notificationService.updateNotification(id, notificationDTO)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // MÉTODO DELETE
-    // Endpoint para deletar uma Notificação
+    // DELETE: Retorna resposta padronizada
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteNotification(@PathVariable String id){
+    public ResponseEntity<String> deleteNotification(@PathVariable String id) {
         boolean result = notificationService.deleteNotification(id);
-
-        if(result){
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body("Cupom deletado com sucesso");
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cupom não encontrado!");
+        return result
+                ? ResponseEntity.ok("Notificação deletada com sucesso")
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notificação não encontrada");
     }
 
 }

@@ -1,10 +1,10 @@
 package com.ditossystem.ditos.service;
 
-import com.ditossystem.ditos.model.Notification;
+import com.ditossystem.ditos.domain.notification.Notification;
+import com.ditossystem.ditos.domain.notification.NotificationPrivateDTO;
+import com.ditossystem.ditos.domain.notification.NotificationPublicDTO;
 import com.ditossystem.ditos.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,56 +20,50 @@ public class NotificationService {
         this.notificationRepository = notificationRepository;
     }
 
-    // Método para criar notificações
-    public Notification saveNotification(Notification notification){
-        return notificationRepository.save(notification);
+    // Método para criar notificações (usa DTO)
+    public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
+        Notification notification = notificationDTO.toEntity();
+        Notification savedNotification = notificationRepository.save(notification);
+        return NotificationPrivateDTO.fromEntity(savedNotification);
     }
 
-    // Método para buscar todas as notificações ou só as ativas
-    public List<Notification> getAllNotifications(){
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if("mobile".equals(auth.getPrincipal())){
-            return notificationRepository.findByActiveTrue();
-        }
-
-        return notificationRepository.findAll();
+    // Método para buscar todas as notificações (retorna DTO privado)
+    public List<NotificationPrivateDTO> getAllNotifications() {
+        return notificationRepository.findAll().stream()
+                .map(NotificationPrivateDTO::fromEntity)
+                .toList();
     }
 
-    // Método para buscar um notificação pelo id
-    public Optional<Notification> getNotificationById(String id){
-        return notificationRepository.findById(id);
+    // Método para buscar notificações ativas (retorna DTO público)
+    public List<NotificationPublicDTO> getActiveNotifications() {
+        return notificationRepository.findByActiveTrue().stream()
+                .map(NotificationPublicDTO::fromEntity)
+                .toList();
     }
 
-    public Optional<Notification> updateNotification(String id, Notification newNotification){
-        Optional<Notification> existingNotification = notificationRepository.findById(id);
-
-        if(existingNotification.isPresent()){
-            Notification existing = existingNotification.get();
-
-            existing.setTitle(newNotification.getTitle());
-            existing.setMessage(newNotification.getMessage());
-            existing.setDate(newNotification.getDate());
-            existing.setActive(newNotification.isActive());
-
-            Notification updated = saveNotification(existing);
-
-            return Optional.ofNullable(updated);
-        }
-
-        return Optional.empty();
+    // Método para buscar por ID (retorna DTO privado)
+    public Optional<NotificationPrivateDTO> getNotificationById(String id) {
+        return notificationRepository.findById(id)
+                .map(NotificationPrivateDTO::fromEntity);
     }
 
-    public boolean deleteNotification(String id){
-        Optional<Notification> existing = notificationRepository.findById(id);
+    // Método para atualizar (usa DTO)
+    public Optional<NotificationPrivateDTO> updateNotification(String id, NotificationPrivateDTO notificationDTO) {
+        return notificationRepository.findById(id)
+                .map(existing -> {
+                    Notification updated = notificationDTO.toEntity();
+                    updated.setId(existing.getId()); // Garante que o ID seja mantido
+                    return notificationRepository.save(updated);
+                })
+                .map(NotificationPrivateDTO::fromEntity);
+    }
 
-        if(existing.isPresent()){
+    // Método para deletar (pode retornar um DTO genérico se desejar)
+    public boolean deleteNotification(String id) {
+        if (notificationRepository.existsById(id)) {
             notificationRepository.deleteById(id);
-
             return true;
         }
-
         return false;
     }
 }
