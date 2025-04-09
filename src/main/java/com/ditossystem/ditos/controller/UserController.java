@@ -1,11 +1,13 @@
 package com.ditossystem.ditos.controller;
 
+import com.ditossystem.ditos.domain.user.User;
 import com.ditossystem.ditos.domain.user.UserDTO;
 import com.ditossystem.ditos.infra.security.SecurityUtils;
 import com.ditossystem.ditos.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @Autowired
-    public  UserController(UserService userService, SecurityUtils securityUtils) {
+    public  UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -51,6 +53,14 @@ public class UserController {
         return users.isEmpty()
                 ? ResponseEntity.notFound().build()
                 : ResponseEntity.ok(users);
+    }
+
+    // Endpoint para retornar as informações do usuário atual
+    // /Users/me
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication){
+        var user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(UserDTO.fromEntity(user));
     }
 
     // Método PUT
