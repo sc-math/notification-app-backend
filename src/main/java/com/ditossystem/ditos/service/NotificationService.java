@@ -4,26 +4,42 @@ import com.ditossystem.ditos.domain.notification.Notification;
 import com.ditossystem.ditos.domain.notification.NotificationPrivateDTO;
 import com.ditossystem.ditos.domain.notification.NotificationPublicDTO;
 import com.ditossystem.ditos.repository.NotificationRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final FCMService fcmService;
 
     @Autowired
-    public NotificationService(NotificationRepository notificationRepository) {
+    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService) {
         this.notificationRepository = notificationRepository;
+        this.fcmService = fcmService;
     }
 
-    // Método para criar notificações (usa DTO)
+    // Método para salvar notificações (usa DTO)
     public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
+
+        log.info("Salvando notificação...");
         Notification notification = notificationDTO.toEntity();
         Notification savedNotification = notificationRepository.save(notification);
+
+        try {
+            fcmService.sendNotificationToAll(
+                    savedNotification.getTitle(),
+                    savedNotification.getMessage()
+            );
+        } catch (Exception e) {
+            log.error("Falha ao enviar notificação via FCM: {}", e.getMessage());
+        }
+
         return NotificationPrivateDTO.fromEntity(savedNotification);
     }
 
