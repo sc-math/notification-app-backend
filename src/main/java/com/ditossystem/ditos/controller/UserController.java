@@ -2,7 +2,6 @@ package com.ditossystem.ditos.controller;
 
 import com.ditossystem.ditos.domain.user.User;
 import com.ditossystem.ditos.domain.user.UserDTO;
-import com.ditossystem.ditos.infra.security.SecurityUtils;
 import com.ditossystem.ditos.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
