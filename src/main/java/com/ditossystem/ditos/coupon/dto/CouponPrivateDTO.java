@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record CouponPrivateDTO(
         String id,
         String code,
-        String name,
+        String description,
         double discount,
         DiscountType discountType,
         double minValue,
@@ -24,7 +24,7 @@ public record CouponPrivateDTO(
         return new CouponPrivateDTO(
                 coupon.getId(),
                 coupon.getCode(),
-                coupon.getName(),
+                coupon.getDescription(),
                 coupon.getDiscount(),
                 coupon.getDiscountType(),
                 coupon.getMinValue(),
@@ -39,7 +39,7 @@ public record CouponPrivateDTO(
     public Coupon ToEntity(){
         Coupon coupon = new Coupon();
         coupon.setCode(this.code);
-        coupon.setName(this.name);
+        coupon.setDescription(this.description);
         coupon.setDiscount(this.discount);
         coupon.setDiscountType(this.discountType);
         coupon.setMinValue(this.minValue);

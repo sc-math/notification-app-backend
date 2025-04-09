@@ -4,14 +4,12 @@ import com.ditossystem.ditos.notification.model.Notification;
 import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
 import com.ditossystem.ditos.notification.dto.NotificationPublicDTO;
 import com.ditossystem.ditos.firebase.FCMService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 public class NotificationService {
 
@@ -27,7 +25,8 @@ public class NotificationService {
     // Método para salvar notificações (usa DTO)
     public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
 
-        log.info("Salvando notificação...");
+        System.out.println("Salvando notificação...");
+
         Notification notification = notificationDTO.toEntity();
         Notification savedNotification = notificationRepository.save(notification);
 
@@ -37,10 +36,31 @@ public class NotificationService {
                     savedNotification.getMessage()
             );
         } catch (Exception e) {
-            log.error("Falha ao enviar notificação via FCM: {}", e.getMessage());
+            System.out.println("Falha ao enviar notificação via FCM: " + e.getMessage());
         }
 
         return NotificationPrivateDTO.fromEntity(savedNotification);
+    }
+
+    public boolean resendNotification(String id) {
+        Optional<NotificationPrivateDTO> notificationDTO = getNotificationById(id);
+
+        if(notificationDTO.isPresent()){
+            Notification notification = notificationDTO.get().toEntity();
+
+            try {
+                fcmService.sendNotificationToAll(
+                        notification.getTitle(),
+                        notification.getMessage()
+                );
+
+                return true;
+            } catch (Exception e) {
+                System.out.println("Falha ao enviar notificação via FCM: " + e.getMessage());
+            }
+        }
+        return false;
+
     }
 
     // Método para buscar todas as notificações (retorna DTO privado)
@@ -51,8 +71,8 @@ public class NotificationService {
     }
 
     // Método para buscar notificações ativas (retorna DTO público)
-    public List<NotificationPublicDTO> getActiveNotifications() {
-        return notificationRepository.findByActiveTrue().stream()
+    public List<NotificationPublicDTO> getScheduleNotifications() {
+        return notificationRepository.findByScheduleTrue().stream()
                 .map(NotificationPublicDTO::fromEntity)
                 .toList();
     }

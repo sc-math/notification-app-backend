@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
+import java.io.InputStream;
 
 @Configuration
 public class FirebaseConfig {
@@ -14,7 +15,11 @@ public class FirebaseConfig {
     @PostConstruct
     public void initializeFirebase() {
         try{
-            FileInputStream serviceAccount = new FileInputStream("src/main/resources/firebase-service-account.json");
+            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("firebase-service-account.json");
+
+            if(serviceAccount == null){
+                throw new RuntimeException("Arquivo de credenciais Firebase não encontrado no classpath");
+            }
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();

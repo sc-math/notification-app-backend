@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 public record CouponPublicDTO(
         String code,
-        String name,
+        String description,
         double discount,
         DiscountType discountType,
         double minValue,
@@ -20,7 +20,7 @@ public record CouponPublicDTO(
     public static CouponPublicDTO fromEntity (Coupon coupon) {
         return new CouponPublicDTO(
                 coupon.getCode(),
-                coupon.getName(),
+                coupon.getDescription(),
                 coupon.getDiscount(),
                 coupon.getDiscountType(),
                 coupon.getMinValue(),

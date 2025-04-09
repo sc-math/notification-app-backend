@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 
-    List<Notification> findByActiveTrue();
+    List<Notification> findByScheduleTrue();
 
     Optional<Notification> findById(String id);
 

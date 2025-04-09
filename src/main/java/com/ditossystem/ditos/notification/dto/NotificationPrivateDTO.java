@@ -10,7 +10,7 @@ public record NotificationPrivateDTO(
         String message,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime date,
-        boolean active
+        boolean schedule
 ) {
     public static NotificationPrivateDTO fromEntity(Notification notification) {
         return new NotificationPrivateDTO(
@@ -18,7 +18,7 @@ public record NotificationPrivateDTO(
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.getDate(),
-                notification.isActive()
+                notification.isSchedule()
         );
     }
 
@@ -28,7 +28,7 @@ public record NotificationPrivateDTO(
         notification.setTitle(this.title());
         notification.setMessage(this.message());
         notification.setDate(this.date());
-        notification.setActive(this.active());
+        notification.setSchedule(this.schedule);
         return notification;
     }
 }

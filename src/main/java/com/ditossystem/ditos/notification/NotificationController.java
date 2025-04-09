@@ -2,6 +2,7 @@ package com.ditossystem.ditos.notification;
 
 import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
 import com.ditossystem.ditos.security.SecurityUtils;
+import com.google.api.Http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +28,20 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedNotification);
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<?> resendNotification(@PathVariable String id){
+
+        return notificationService.resendNotification(id)
+                ? ResponseEntity.ok("Notificação reenviada!")
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Falha ao encontrar o cupom!");
+    }
+
     // GET All: Retorna DTOs diferentes baseado na autenticação
     @GetMapping
     public ResponseEntity<?> getAllNotifications() {
-        return securityUtils.isAuthenticated()
-                ? ResponseEntity.ok(notificationService.getAllNotifications())
-                : ResponseEntity.ok(notificationService.getActiveNotifications());
+        if (securityUtils.isAuthenticated())
+            return  ResponseEntity.ok(notificationService.getAllNotifications());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Não autenticado");
     }
 
     // GET By ID: Retorna DTO privado se autenticado, ou 404 se não
