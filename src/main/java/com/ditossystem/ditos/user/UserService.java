@@ -1,5 +1,7 @@
 package com.ditossystem.ditos.user;
 
+import com.ditossystem.ditos.exception.UserAlreadyExistsException;
+import com.ditossystem.ditos.security.dto.RegisterDTO;
 import com.ditossystem.ditos.user.model.User;
 import com.ditossystem.ditos.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,5 +67,29 @@ public class UserService {
         }
 
         return false;
+    }
+
+    public UserDTO registerUser(RegisterDTO data){
+        if(userRepository.findByLogin(data.login()) != null)
+            throw new UserAlreadyExistsException("Login já existe");
+
+        String encryptedPassword = passwordEncoder.encode(data.password());
+        User newUser = new User();
+        newUser.setLogin(data.login());
+        newUser.setPassword(encryptedPassword);
+        newUser.setRole(data.role());
+
+        User saved = userRepository.save(newUser);
+
+        return UserDTO.fromEntity(saved);
+    }
+
+    public void registerAdminUser(RegisterDTO data){
+        if(userRepository.count() == 0){
+            registerUser(data);
+            return;
+        }
+
+        throw new UserAlreadyExistsException("Criação de Admin Inválida");
     }
 }

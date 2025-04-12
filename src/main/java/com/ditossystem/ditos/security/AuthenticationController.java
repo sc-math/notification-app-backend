@@ -1,11 +1,15 @@
 package com.ditossystem.ditos.security;
 
+import com.ditossystem.ditos.exception.UserAlreadyExistsException;
 import com.ditossystem.ditos.user.UserRepository;
 import com.ditossystem.ditos.security.dto.AuthenticationDTO;
 import com.ditossystem.ditos.security.dto.LoginResponseDTO;
 import com.ditossystem.ditos.security.dto.RegisterDTO;
+import com.ditossystem.ditos.user.UserService;
+import com.ditossystem.ditos.user.dto.UserDTO;
 import com.ditossystem.ditos.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,20 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final  PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final UserService userService;
 
     @Autowired
     public AuthenticationController(
             AuthenticationManager authenticationManager,
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            TokenService tokenService) {
+            TokenService tokenService, UserService userService) {
         this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -48,17 +50,14 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterDTO data){
-        if(this.userRepository.findByLogin(data.login()) != null)
-            return ResponseEntity.badRequest().build();
-
-        String encryptedPassword = passwordEncoder.encode(data.password());
-        User newUser = new User();
-        newUser.setLogin(data.login());
-        newUser.setPassword(encryptedPassword);
-        newUser.setRole(data.role());
-
-        this.userRepository.save(newUser);
-
-        return ResponseEntity.ok().build();
+        try {
+            UserDTO result = userService.registerUser(data);
+            return ResponseEntity.ok(result); // retorna o usuário criado, se quiser
+        } catch (UserAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Login já cadastrado");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro inesperado");
+        }
     }
+
 }
