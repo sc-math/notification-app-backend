@@ -54,6 +54,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/users").hasAnyRole("ADMIN")
 
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .anonymous(AbstractHttpConfigurer::disable)

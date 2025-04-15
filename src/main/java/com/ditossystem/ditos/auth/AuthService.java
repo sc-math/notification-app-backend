@@ -1,4 +1,4 @@
-package com.ditossystem.ditos.security;
+package com.ditossystem.ditos.auth;
 
 import com.ditossystem.ditos.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +8,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthorizationService implements UserDetailsService {
+public class AuthService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     @Autowired
-    public AuthorizationService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

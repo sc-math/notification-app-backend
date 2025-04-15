@@ -1,7 +1,7 @@
 package com.ditossystem.ditos.init;
 
 import com.ditossystem.ditos.exception.UserAlreadyExistsException;
-import com.ditossystem.ditos.security.dto.RegisterDTO;
+import com.ditossystem.ditos.user.dto.RegisterDTO;
 import com.ditossystem.ditos.user.UserService;
 import com.ditossystem.ditos.user.model.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
