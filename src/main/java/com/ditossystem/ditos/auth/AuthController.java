@@ -1,10 +1,11 @@
-package com.ditossystem.ditos.security;
+package com.ditossystem.ditos.auth;
 
 import com.ditossystem.ditos.exception.UserAlreadyExistsException;
+import com.ditossystem.ditos.security.TokenService;
 import com.ditossystem.ditos.user.UserRepository;
-import com.ditossystem.ditos.security.dto.AuthenticationDTO;
-import com.ditossystem.ditos.security.dto.LoginResponseDTO;
-import com.ditossystem.ditos.security.dto.RegisterDTO;
+import com.ditossystem.ditos.auth.dto.AuthDTO;
+import com.ditossystem.ditos.auth.dto.LoginResponseDTO;
+import com.ditossystem.ditos.user.dto.RegisterDTO;
 import com.ditossystem.ditos.user.UserService;
 import com.ditossystem.ditos.user.dto.UserDTO;
 import com.ditossystem.ditos.user.model.User;
@@ -21,14 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("auth")
-public class AuthenticationController {
+public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
     private final UserService userService;
 
     @Autowired
-    public AuthenticationController(
+    public AuthController(
             AuthenticationManager authenticationManager,
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
@@ -39,7 +40,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthenticationDTO data){
+    public ResponseEntity<?> login(@RequestBody AuthDTO data){
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 

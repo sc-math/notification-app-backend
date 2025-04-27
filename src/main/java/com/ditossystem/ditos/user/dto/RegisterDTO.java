@@ -1,4 +1,4 @@
-package com.ditossystem.ditos.security.dto;
+package com.ditossystem.ditos.user.dto;
 
 import com.ditossystem.ditos.user.model.UserRole;
 
