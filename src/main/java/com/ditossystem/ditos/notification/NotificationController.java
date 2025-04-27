@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {
@@ -29,11 +31,17 @@ public class NotificationController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> resendNotification(@PathVariable String id){
+    public ResponseEntity<?> resendNotification(@PathVariable String id, @RequestBody NotificationPrivateDTO notificationPrivateDTO){
+
+        Optional<NotificationPrivateDTO> response = notificationService.updateNotification(id, notificationPrivateDTO);
+
+        if(response.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Falha ao encontrar a notificação!");
+        }
 
         return notificationService.resendNotification(id)
                 ? ResponseEntity.ok("Notificação reenviada!")
-                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Falha ao encontrar o cupom!");
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Falha ao encontrar a Notificação!");
     }
 
     // GET All: Retorna DTOs diferentes baseado na autenticação
@@ -54,10 +62,8 @@ public class NotificationController {
 
     // PUT: Aceita NotificationPrivateDTO
     @PutMapping("/{id}")
-    public ResponseEntity<NotificationPrivateDTO> updateNotification(
-            @PathVariable String id,
-            @RequestBody NotificationPrivateDTO notificationDTO
-    ) {
+    public ResponseEntity<NotificationPrivateDTO> updateNotification(@PathVariable String id,
+                                                                     @RequestBody NotificationPrivateDTO notificationDTO) {
         return notificationService.updateNotification(id, notificationDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
