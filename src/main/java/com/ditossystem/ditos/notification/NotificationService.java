@@ -41,12 +41,7 @@ public class NotificationService {
 
     private void verifySchedule(Notification noti){
         if(noti.isSchedule()){
-            notificationSchedulerService.setScheduler(
-                    noti.getTitle(),
-                    noti.getMessage(),
-                    noti.getDate()
-            );
-            System.out.println("Notificação agendada para: " + noti.getDate());
+            notificationSchedulerService.setScheduler(noti);
         }
         else{
             sendNotification(noti);
@@ -67,17 +62,16 @@ public class NotificationService {
     }
 
     // Método para reenviar notificações
-    public boolean resendNotification(String id) {
+    public void resendNotification(String id) {
         Optional<NotificationPrivateDTO> notificationDTO = getNotificationById(id);
 
         if(notificationDTO.isEmpty())
-            return false;
+            return;
 
         Notification noti = notificationDTO.get().toEntity();
 
         verifySchedule(noti);
 
-        return true;
     }
 
     // Método para buscar todas as notificações (retorna DTO privado)
@@ -101,14 +95,26 @@ public class NotificationService {
     }
 
     // Método para atualizar (usa DTO)
-    public Optional<NotificationPrivateDTO> updateNotification(String id, NotificationPrivateDTO notificationDTO) {
-        return notificationRepository.findById(id)
-                .map(existing -> {
-                    Notification updated = notificationDTO.toEntity();
-                    updated.setId(existing.getId()); // Garante que o ID seja mantido
-                    return notificationRepository.save(updated);
-                })
-                .map(NotificationPrivateDTO::fromEntity);
+    public Optional<NotificationPrivateDTO> updateNotification(String id, NotificationPrivateDTO newNotificationDTO) {
+        Optional<Notification> optionalNotification = notificationRepository.findById(id);
+
+        if(optionalNotification.isPresent()){
+            Notification existingNotification = optionalNotification.get();
+
+            existingNotification.setTitle(newNotificationDTO.title());
+            existingNotification.setMessage(newNotificationDTO.message());
+            existingNotification.setDate(newNotificationDTO.date());
+            existingNotification.setSchedule(newNotificationDTO.schedule());
+
+            Notification savedNotification = notificationRepository.save(existingNotification);
+
+            resendNotification(savedNotification.getId());
+
+            return Optional.of(NotificationPrivateDTO.fromEntity(savedNotification));
+        }
+        else{
+            return Optional.empty();
+        }
     }
 
     // Método para deletar (pode retornar um DTO genérico se desejar)

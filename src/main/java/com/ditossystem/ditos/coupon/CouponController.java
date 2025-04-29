@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +34,7 @@ public class CouponController {
     }
 
     // MÉTODOS GETS
-    // Método Get All
+    // MÉTODO Get All
     // Endpoint para listar todos os cupons (GET)
     @GetMapping
     public ResponseEntity<?> getAllCoupons(){
@@ -58,11 +59,10 @@ public class CouponController {
     // Endpoint para buscar um cupom pelo id (GET)
     @GetMapping("/{id}")
     public ResponseEntity<CouponPrivateDTO> getCouponById(@PathVariable String id){
-        Optional<CouponPrivateDTO> coupon = couponService.getCouponById(id);
+        CouponPrivateDTO response = couponService.getCouponById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cupom não encontrado."));
 
-        return coupon
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // MÉTODO PUT

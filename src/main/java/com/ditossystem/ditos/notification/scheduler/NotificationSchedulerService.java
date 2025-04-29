@@ -1,13 +1,13 @@
 package com.ditossystem.ditos.notification.scheduler;
 
 import com.ditossystem.ditos.notification.job.NotificationJob;
+import com.ditossystem.ditos.notification.model.Notification;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.UUID;
 
@@ -21,34 +21,53 @@ public class NotificationSchedulerService {
         this.scheduler = scheduler;
     }
 
-    public void setScheduler(String title, String body, LocalDateTime date){
+    public void setScheduler(Notification noti){
         try{
-            JobDetail jobDetail = buildJobDetail(title, body);
-            Trigger trigger = buildJobTrigger(jobDetail, date);
+            // Cancela o Trigger antigo da Notificação (Se existir)
+            TriggerKey triggerKey = new TriggerKey("notificationTrigger_" + noti.getId(), "notifications-triggers");
+
+            if(scheduler.checkExists(triggerKey)){
+                scheduler.unscheduleJob(triggerKey);
+                System.out.println("Trigger anterior da Notificação cancelada.");
+            }
+
+            // Cancela o Job antigo da Notificação (Se existir)
+            JobKey jobKey = new JobKey("notificationJob_" + noti.getId(), "notifications");
+
+            if(scheduler.checkExists(jobKey)){
+                scheduler.deleteJob(jobKey);
+                System.out.println("Job anterior da Notificação deletada.");
+            }
+
+            // Criando o novo job e trigger com a data de expiração atualizada
+            JobDetail jobDetail = buildJobDetail(noti);
+            Trigger trigger = buildJobTrigger(jobDetail, noti);
 
             scheduler.scheduleJob(jobDetail, trigger);
+            System.out.println("Novo agendamento criado para a notificação \n" + noti);
 
-        }catch (SchedulerException e){
-            e.printStackTrace();
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private JobDetail buildJobDetail(String title, String body){
+    private JobDetail buildJobDetail(Notification notification){
         JobDataMap jobDataMap = new JobDataMap();
-        jobDataMap.put("title", title);
-        jobDataMap.put("body", body);
+        jobDataMap.put("title", notification.getTitle());
+        jobDataMap.put("body", notification.getMessage());
 
         return JobBuilder.newJob(NotificationJob.class)
-                .withIdentity(UUID.randomUUID().toString(), "notificacoes")
+                .withIdentity("notificationJob_" + notification.getId(), "notifications")
                 .usingJobData(jobDataMap)
-                .storeDurably().build();
+                .storeDurably()
+                .build();
     }
 
-    private Trigger buildJobTrigger(JobDetail jobDetail, LocalDateTime startAt){
+    private Trigger buildJobTrigger(JobDetail jobDetail, Notification notification){
         return TriggerBuilder.newTrigger()
                 .forJob(jobDetail)
-                .withIdentity(jobDetail.getKey().getName(), "notificacoes-triggers")
-                .startAt(Date.from(startAt.atZone(ZoneId.of("America/Sao_Paulo")).toInstant()))
+                .withIdentity("notificationTrigger_" + notification.getId(), "notifications-triggers")
+                .startAt(Date.from(notification.getDate().atZone(ZoneId.of("America/Sao_Paulo")).toInstant()))
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())
                 .build();
     }
