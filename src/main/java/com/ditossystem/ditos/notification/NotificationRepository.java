@@ -15,4 +15,6 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     Optional<Notification> findById(String id);
 
     void deleteById(String id);
+
+    long countByCreatedBy(String createdBy);
 }

@@ -17,4 +17,6 @@ public interface CouponRepository extends MongoRepository<Coupon, String> {
     Optional<Coupon> findById(String id);
 
     void deleteById(String id);
+
+    long countByCreatedBy(String id);
 }

@@ -17,7 +17,6 @@ public class CouponController {
     private final CouponService couponService;
     private final SecurityUtils securityUtils;
 
-
     @Autowired
     public CouponController(CouponService couponService, SecurityUtils securityUtils) {
         this.couponService = couponService;

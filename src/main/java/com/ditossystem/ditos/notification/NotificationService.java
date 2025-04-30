@@ -5,9 +5,8 @@ import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
 import com.ditossystem.ditos.notification.dto.NotificationPublicDTO;
 import com.ditossystem.ditos.firebase.FCMService;
 import com.ditossystem.ditos.notification.scheduler.NotificationSchedulerService;
-import com.ditossystem.ditos.user.model.User;
+import com.ditossystem.ditos.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,12 +19,14 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final FCMService fcmService;
     private final NotificationSchedulerService notificationSchedulerService;
+    private final SecurityUtils securityUtils;
 
     @Autowired
-    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService , NotificationSchedulerService notificationSchedulerService) {
+    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService , NotificationSchedulerService notificationSchedulerService, SecurityUtils securityUtils) {
         this.notificationRepository = notificationRepository;
         this.fcmService = fcmService;
         this.notificationSchedulerService = notificationSchedulerService;
+        this.securityUtils = securityUtils;
     }
 
     // Envia as notificações
@@ -51,16 +52,6 @@ public class NotificationService {
         }
     }
 
-    private String getUserId(){
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if(principal instanceof User){
-            return ((User) principal).getId();
-        }
-
-        throw new RuntimeException("Usuário não autenticado");
-    }
-
     // Método para salvar notificações
     public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
 
@@ -70,7 +61,7 @@ public class NotificationService {
 
         // Preenche os campos createdDate e createdBy
         notification.setCreatedDate(LocalDateTime.now());
-        notification.setCreatedBy(getUserId());
+        notification.setCreatedBy(securityUtils.getUserId());
 
         // Salva no banco
         Notification savedNotification = notificationRepository.save(notification);

@@ -55,6 +55,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/users").hasAnyRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.GET, "/data").hasAnyRole("ADMIN", "USER")
+
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
