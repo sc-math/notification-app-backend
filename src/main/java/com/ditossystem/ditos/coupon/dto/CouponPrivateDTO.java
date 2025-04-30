@@ -21,7 +21,8 @@ public record CouponPrivateDTO(
         boolean active,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime createdDate,
-        String createdBy
+        String createdBy,
+        long clicks
 ) {
     public static CouponPrivateDTO fromEntity(Coupon coupon){
         return new CouponPrivateDTO(
@@ -37,7 +38,8 @@ public record CouponPrivateDTO(
                 coupon.getQuantity(),
                 coupon.isActive(),
                 coupon.getCreatedDate(),
-                coupon.getCreatedBy()
+                coupon.getCreatedBy(),
+                coupon.getClicks()
         );
     }
 
@@ -55,6 +57,8 @@ public record CouponPrivateDTO(
         coupon.setActive(this.active);
         coupon.setCreatedDate(this.createdDate);
         coupon.setCreatedBy(this.createdBy);
+        coupon.setClicks(this.clicks);
+
         return coupon;
     }
 }

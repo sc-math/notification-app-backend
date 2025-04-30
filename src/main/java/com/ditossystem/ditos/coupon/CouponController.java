@@ -32,6 +32,14 @@ public class CouponController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCoupon);
     }
 
+    // Endpoint para incrementar os clicks nos cupons
+    @PostMapping("/click/{id}")
+    public ResponseEntity<?> increaseCouponClicks(@PathVariable String id){
+        couponService.clickCoupon(id);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
     // MÉTODOS GETS
     // MÉTODO Get All
     // Endpoint para listar todos os cupons (GET)

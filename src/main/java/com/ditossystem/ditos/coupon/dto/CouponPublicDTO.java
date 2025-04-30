@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 public record CouponPublicDTO(
+        String id,
         String code,
         String description,
         double discount,
@@ -19,6 +20,7 @@ public record CouponPublicDTO(
 
     public static CouponPublicDTO fromEntity (Coupon coupon) {
         return new CouponPublicDTO(
+                coupon.getId(),
                 coupon.getCode(),
                 coupon.getDescription(),
                 coupon.getDiscount(),

@@ -28,6 +28,7 @@ public class Coupon {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdDate;
     private String createdBy;
+    private long clicks;
 
     public Coupon() {
     }
@@ -43,6 +44,7 @@ public class Coupon {
         this.expirationDate = expirationDate;
         this.quantity = quantity;
         this.active = active;
+        this.clicks = 0;
     }
 
     public String getId() {
@@ -147,6 +149,18 @@ public class Coupon {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public long getClicks() {
+        return clicks;
+    }
+
+    public void setClicks(long clicks) {
+        this.clicks = clicks;
+    }
+
+    public void increaseClicks() {
+        this.clicks++;
     }
 
     @Override

@@ -116,4 +116,16 @@ public class CouponService {
 
         return false;
     }
+
+    public void clickCoupon(String id){
+        Optional<Coupon> existing = couponRepository.findById(id);
+
+        if(existing.isPresent()) {
+            Coupon coupon = existing.get();
+
+            coupon.increaseClicks();
+
+            couponRepository.save(coupon);
+        }
+    }
 }
