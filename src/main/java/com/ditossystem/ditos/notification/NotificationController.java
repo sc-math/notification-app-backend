@@ -2,13 +2,12 @@ package com.ditossystem.ditos.notification;
 
 import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
 import com.ditossystem.ditos.security.SecurityUtils;
-import com.google.api.Http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/notifications")
@@ -23,25 +22,20 @@ public class NotificationController {
         this.securityUtils = securityUtils;
     }
 
-    // MÉTODO POST
+    // POST Create: Cria o objeto e salva no banco
     @PostMapping
     public ResponseEntity<NotificationPrivateDTO> createNotification(@RequestBody NotificationPrivateDTO notificationDTO) {
         NotificationPrivateDTO savedNotification = notificationService.saveNotification(notificationDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedNotification);
     }
 
+    // POST By ID: Reenvia notificação
     @PostMapping("/{id}")
     public ResponseEntity<?> resendNotification(@PathVariable String id, @RequestBody NotificationPrivateDTO notificationPrivateDTO){
+        NotificationPrivateDTO response = notificationService.updateNotification(id, notificationPrivateDTO)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificação não encontrada"));
 
-        Optional<NotificationPrivateDTO> response = notificationService.updateNotification(id, notificationPrivateDTO);
-
-        if(response.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Falha ao encontrar a notificação!");
-        }
-
-        return notificationService.resendNotification(id)
-                ? ResponseEntity.ok("Notificação reenviada!")
-                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Falha ao encontrar a Notificação!");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // GET All: Retorna DTOs diferentes baseado na autenticação

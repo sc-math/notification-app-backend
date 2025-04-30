@@ -4,9 +4,12 @@ import com.ditossystem.ditos.notification.model.Notification;
 import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
 import com.ditossystem.ditos.notification.dto.NotificationPublicDTO;
 import com.ditossystem.ditos.firebase.FCMService;
+import com.ditossystem.ditos.notification.scheduler.NotificationSchedulerService;
+import com.ditossystem.ditos.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,52 +18,70 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final FCMService fcmService;
+    private final NotificationSchedulerService notificationSchedulerService;
+    private final SecurityUtils securityUtils;
 
     @Autowired
-    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService) {
+    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService , NotificationSchedulerService notificationSchedulerService, SecurityUtils securityUtils) {
         this.notificationRepository = notificationRepository;
         this.fcmService = fcmService;
+        this.notificationSchedulerService = notificationSchedulerService;
+        this.securityUtils = securityUtils;
     }
 
-    // Método para salvar notificações (usa DTO)
+    // Envia as notificações
+    private void sendNotification(Notification noti) {
+        try {
+            fcmService.sendNotificationToAll(
+                    noti.getTitle(),
+                    noti.getMessage()
+            );
+
+        } catch (Exception e) {
+            System.out.println("Falha ao enviar notificação via FCM: " + e.getMessage());
+        }
+
+    }
+
+    private void verifySchedule(Notification noti){
+        if(noti.isSchedule()){
+            notificationSchedulerService.setScheduler(noti);
+        }
+        else{
+            sendNotification(noti);
+        }
+    }
+
+    // Método para salvar notificações
     public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
 
         System.out.println("Salvando notificação...");
 
         Notification notification = notificationDTO.toEntity();
+
+        // Preenche os campos createdDate e createdBy
+        notification.setCreatedDate(LocalDateTime.now());
+        notification.setCreatedBy(securityUtils.getUserId());
+
+        // Salva no banco
         Notification savedNotification = notificationRepository.save(notification);
 
-        try {
-            fcmService.sendNotificationToAll(
-                    savedNotification.getTitle(),
-                    savedNotification.getMessage()
-            );
-        } catch (Exception e) {
-            System.out.println("Falha ao enviar notificação via FCM: " + e.getMessage());
-        }
+        // Verifica agendamento para envio no FCM
+        verifySchedule(savedNotification);
 
         return NotificationPrivateDTO.fromEntity(savedNotification);
     }
 
-    public boolean resendNotification(String id) {
+    // Método para reenviar notificações
+    private void resendNotification(String id) {
         Optional<NotificationPrivateDTO> notificationDTO = getNotificationById(id);
 
-        if(notificationDTO.isPresent()){
-            Notification notification = notificationDTO.get().toEntity();
+        if(notificationDTO.isEmpty())
+            return;
 
-            try {
-                fcmService.sendNotificationToAll(
-                        notification.getTitle(),
-                        notification.getMessage()
-                );
+        Notification noti = notificationDTO.get().toEntity();
 
-                return true;
-            } catch (Exception e) {
-                System.out.println("Falha ao enviar notificação via FCM: " + e.getMessage());
-            }
-        }
-        return false;
-
+        verifySchedule(noti);
     }
 
     // Método para buscar todas as notificações (retorna DTO privado)
@@ -84,14 +105,26 @@ public class NotificationService {
     }
 
     // Método para atualizar (usa DTO)
-    public Optional<NotificationPrivateDTO> updateNotification(String id, NotificationPrivateDTO notificationDTO) {
-        return notificationRepository.findById(id)
-                .map(existing -> {
-                    Notification updated = notificationDTO.toEntity();
-                    updated.setId(existing.getId()); // Garante que o ID seja mantido
-                    return notificationRepository.save(updated);
-                })
-                .map(NotificationPrivateDTO::fromEntity);
+    public Optional<NotificationPrivateDTO> updateNotification(String id, NotificationPrivateDTO newNotificationDTO) {
+        Optional<Notification> optionalNotification = notificationRepository.findById(id);
+
+        if(optionalNotification.isPresent()){
+            Notification existingNotification = optionalNotification.get();
+
+            existingNotification.setTitle(newNotificationDTO.title());
+            existingNotification.setMessage(newNotificationDTO.message());
+            existingNotification.setDate(newNotificationDTO.date());
+            existingNotification.setSchedule(newNotificationDTO.schedule());
+
+            Notification savedNotification = notificationRepository.save(existingNotification);
+
+            resendNotification(savedNotification.getId());
+
+            return Optional.of(NotificationPrivateDTO.fromEntity(savedNotification));
+        }
+        else{
+            return Optional.empty();
+        }
     }
 
     // Método para deletar (pode retornar um DTO genérico se desejar)

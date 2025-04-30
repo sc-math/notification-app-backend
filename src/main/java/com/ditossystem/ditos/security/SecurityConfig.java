@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/coupons").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/coupons/click/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/coupons").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.PUT, "/coupons/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.DELETE, "/coupons/**").hasAnyRole("ADMIN", "USER")
@@ -53,6 +54,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/users").hasAnyRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/data").hasAnyRole("ADMIN", "USER")
 
                         .requestMatchers(
                                 "/v3/api-docs/**",

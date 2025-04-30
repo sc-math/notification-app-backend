@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/coupons")
@@ -16,7 +16,6 @@ public class CouponController {
 
     private final CouponService couponService;
     private final SecurityUtils securityUtils;
-
 
     @Autowired
     public CouponController(CouponService couponService, SecurityUtils securityUtils) {
@@ -32,8 +31,16 @@ public class CouponController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCoupon);
     }
 
+    // Endpoint para incrementar os clicks nos cupons
+    @PostMapping("/click/{id}")
+    public ResponseEntity<?> increaseCouponClicks(@PathVariable String id){
+        couponService.clickCoupon(id);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
     // MÉTODOS GETS
-    // Método Get All
+    // MÉTODO Get All
     // Endpoint para listar todos os cupons (GET)
     @GetMapping
     public ResponseEntity<?> getAllCoupons(){
@@ -58,11 +65,10 @@ public class CouponController {
     // Endpoint para buscar um cupom pelo id (GET)
     @GetMapping("/{id}")
     public ResponseEntity<CouponPrivateDTO> getCouponById(@PathVariable String id){
-        Optional<CouponPrivateDTO> coupon = couponService.getCouponById(id);
+        CouponPrivateDTO response = couponService.getCouponById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cupom não encontrado."));
 
-        return coupon
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // MÉTODO PUT

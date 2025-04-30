@@ -3,9 +3,12 @@ package com.ditossystem.ditos.coupon;
 import com.ditossystem.ditos.coupon.model.Coupon;
 import com.ditossystem.ditos.coupon.dto.CouponPrivateDTO;
 import com.ditossystem.ditos.coupon.dto.CouponPublicDTO;
+import com.ditossystem.ditos.coupon.scheduler.CouponSchedulerService;
+import com.ditossystem.ditos.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,56 +16,87 @@ import java.util.Optional;
 public class CouponService {
 
     private final CouponRepository couponRepository;
+    private final CouponSchedulerService couponSchedulerService;
+    private final SecurityUtils securityUtils;
 
     @Autowired
-    public CouponService(CouponRepository couponRepository) {
+    public CouponService(CouponRepository couponRepository, CouponSchedulerService couponSchedulerService, SecurityUtils securityUtils) {
         this.couponRepository = couponRepository;
+        this.couponSchedulerService = couponSchedulerService;
+        this.securityUtils = securityUtils;
     }
 
-    // Método para criar cupons
+    // Função para criar cupons
     public CouponPrivateDTO saveCoupon(CouponPrivateDTO couponDTO){
+
         Coupon newCoupon = couponDTO.ToEntity();
+        newCoupon.setCreatedDate(LocalDateTime.now());
+        newCoupon.setCreatedBy(securityUtils.getUserId());
+
         Coupon savedCoupon = couponRepository.save(newCoupon);
+
+        couponSchedulerService.setScheduler(savedCoupon);
+
         return CouponPrivateDTO.fromEntity(savedCoupon);
     }
 
-    // Método para buscar todos os cupons
+    // Função para buscar todos os cupons
     public List<CouponPrivateDTO> getAllCoupons(){
         return couponRepository.findAll().stream()
                 .map(CouponPrivateDTO::fromEntity)
                 .toList();
     }
 
-    // Método para buscar todos os cupons ativos
+    // Função para buscar todos os cupons ativos
     public List<CouponPublicDTO> getActiveCoupons(){
         return couponRepository.findByActiveTrue().stream()
                 .map(CouponPublicDTO::fromEntity)
                 .toList();
     }
 
-    // Método para buscar os cupons pelo mesmo código
+    // Função para buscar os cupons pelo mesmo código
     public List<CouponPrivateDTO> getCouponByCode(String code){
         return couponRepository.findByCode(code).stream()
                 .map(CouponPrivateDTO::fromEntity)
                 .toList();
     }
 
-    // Método para buscar um cupom pelo Id
+    // Função para buscar um cupom pelo Id
     public Optional<CouponPrivateDTO> getCouponById(String id){
         return couponRepository.findById(id)
                 .map(CouponPrivateDTO::fromEntity);
     }
 
-    // Método para atualizar um cupom pelo Id
+    // Função para atualizar um cupom pelo Id
     public Optional<CouponPrivateDTO> updateCoupon(String id, CouponPrivateDTO newCoupon){
-        return couponRepository.findById(id)
-                .map(existingCoupon -> {
-                    Coupon updated = newCoupon.ToEntity();
-                    updated.setId(existingCoupon.getId());
-                    return  couponRepository.save(updated);
-                }).map(CouponPrivateDTO::fromEntity);
+        Optional<Coupon> optionalCoupon = couponRepository.findById(id);
+
+        if(optionalCoupon.isPresent()){
+            Coupon existingCoupon = optionalCoupon.get();
+
+            existingCoupon.setCode(newCoupon.code());
+            existingCoupon.setDescription(newCoupon.description());
+            existingCoupon.setDiscount(newCoupon.discount());
+            existingCoupon.setDiscountType(newCoupon.discountType());
+            existingCoupon.setMinValue(newCoupon.minValue());
+            existingCoupon.setMaxDiscount(newCoupon.maxDiscount());
+            existingCoupon.setLimit(newCoupon.limit());
+            existingCoupon.setExpirationDate(newCoupon.expirationDate());
+            existingCoupon.setQuantity(newCoupon.quantity());
+            existingCoupon.setActive(newCoupon.active());
+
+            Coupon savedCoupon = couponRepository.save(existingCoupon);
+
+            couponSchedulerService.setScheduler(savedCoupon);
+
+            return Optional.of(CouponPrivateDTO.fromEntity(savedCoupon));
+        }
+        else{
+            return Optional.empty();
+        }
     }
 
+    // Função para deletar um cupom pelo Id
     public boolean deleteCoupon(String id){
         Optional<Coupon> existing = couponRepository.findById(id);
         if(existing.isPresent()){
@@ -72,5 +106,17 @@ public class CouponService {
         }
 
         return false;
+    }
+
+    public void clickCoupon(String id){
+        Optional<Coupon> existing = couponRepository.findById(id);
+
+        if(existing.isPresent()) {
+            Coupon coupon = existing.get();
+
+            coupon.increaseClicks();
+
+            couponRepository.save(coupon);
+        }
     }
 }
