@@ -18,7 +18,9 @@ public record CouponPrivateDTO(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime expirationDate,
         int quantity,
-        boolean active
+        boolean active,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        LocalDateTime createdDate
 ) {
     public static CouponPrivateDTO fromEntity(Coupon coupon){
         return new CouponPrivateDTO(
@@ -32,7 +34,8 @@ public record CouponPrivateDTO(
                 coupon.getLimit(),
                 coupon.getExpirationDate(),
                 coupon.getQuantity(),
-                coupon.isActive()
+                coupon.isActive(),
+                coupon.getCreatedDate()
         );
     }
 
@@ -48,6 +51,7 @@ public record CouponPrivateDTO(
         coupon.setExpirationDate(this.expirationDate);
         coupon.setQuantity(this.quantity);
         coupon.setActive(this.active);
+        coupon.setCreatedDate(this.createdDate);
         return coupon;
     }
 }

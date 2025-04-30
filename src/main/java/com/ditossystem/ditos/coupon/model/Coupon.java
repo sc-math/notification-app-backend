@@ -25,6 +25,8 @@ public class Coupon {
     private LocalDateTime expirationDate;
     private int quantity;
     private boolean active;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdDate;
 
     public Coupon() {
     }
@@ -129,6 +131,15 @@ public class Coupon {
     public void setId(String id) {
         this.id = id;
     }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
 
     @Override
     public String toString() {

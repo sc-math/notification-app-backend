@@ -7,6 +7,7 @@ import com.ditossystem.ditos.coupon.scheduler.CouponSchedulerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,10 @@ public class CouponService {
 
     // Função para criar cupons
     public CouponPrivateDTO saveCoupon(CouponPrivateDTO couponDTO){
+
         Coupon newCoupon = couponDTO.ToEntity();
+        newCoupon.setCreatedDate(LocalDateTime.now());
+
         Coupon savedCoupon = couponRepository.save(newCoupon);
 
         couponSchedulerService.setScheduler(savedCoupon);
