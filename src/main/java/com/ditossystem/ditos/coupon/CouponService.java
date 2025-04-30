@@ -4,7 +4,9 @@ import com.ditossystem.ditos.coupon.model.Coupon;
 import com.ditossystem.ditos.coupon.dto.CouponPrivateDTO;
 import com.ditossystem.ditos.coupon.dto.CouponPublicDTO;
 import com.ditossystem.ditos.coupon.scheduler.CouponSchedulerService;
+import com.ditossystem.ditos.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,11 +25,22 @@ public class CouponService {
         this.couponSchedulerService = couponSchedulerService;
     }
 
+    private String getUserId(){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(principal instanceof User){
+            return ((User) principal).getId();
+        }
+
+        throw new RuntimeException("Usuário não autenticado");
+    }
+
     // Função para criar cupons
     public CouponPrivateDTO saveCoupon(CouponPrivateDTO couponDTO){
 
         Coupon newCoupon = couponDTO.ToEntity();
         newCoupon.setCreatedDate(LocalDateTime.now());
+        newCoupon.setCreatedBy(getUserId());
 
         Coupon savedCoupon = couponRepository.save(newCoupon);
 

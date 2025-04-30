@@ -27,6 +27,7 @@ public class Coupon {
     private boolean active;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdDate;
+    private String createdBy;
 
     public Coupon() {
     }
@@ -140,6 +141,13 @@ public class Coupon {
         this.createdDate = createdDate;
     }
 
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
     @Override
     public String toString() {

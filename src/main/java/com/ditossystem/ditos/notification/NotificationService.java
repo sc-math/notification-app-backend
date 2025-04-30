@@ -5,9 +5,12 @@ import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
 import com.ditossystem.ditos.notification.dto.NotificationPublicDTO;
 import com.ditossystem.ditos.firebase.FCMService;
 import com.ditossystem.ditos.notification.scheduler.NotificationSchedulerService;
+import com.ditossystem.ditos.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,21 +51,38 @@ public class NotificationService {
         }
     }
 
+    private String getUserId(){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(principal instanceof User){
+            return ((User) principal).getId();
+        }
+
+        throw new RuntimeException("Usuário não autenticado");
+    }
+
     // Método para salvar notificações
     public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
 
         System.out.println("Salvando notificação...");
 
         Notification notification = notificationDTO.toEntity();
+
+        // Preenche os campos createdDate e createdBy
+        notification.setCreatedDate(LocalDateTime.now());
+        notification.setCreatedBy(getUserId());
+
+        // Salva no banco
         Notification savedNotification = notificationRepository.save(notification);
 
+        // Verifica agendamento para envio no FCM
         verifySchedule(savedNotification);
 
         return NotificationPrivateDTO.fromEntity(savedNotification);
     }
 
     // Método para reenviar notificações
-    public void resendNotification(String id) {
+    private void resendNotification(String id) {
         Optional<NotificationPrivateDTO> notificationDTO = getNotificationById(id);
 
         if(notificationDTO.isEmpty())
@@ -71,7 +91,6 @@ public class NotificationService {
         Notification noti = notificationDTO.get().toEntity();
 
         verifySchedule(noti);
-
     }
 
     // Método para buscar todas as notificações (retorna DTO privado)
