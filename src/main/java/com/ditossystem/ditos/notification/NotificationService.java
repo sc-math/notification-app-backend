@@ -2,14 +2,13 @@ package com.ditossystem.ditos.notification;
 
 import com.ditossystem.ditos.notification.model.Notification;
 import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
-import com.ditossystem.ditos.notification.dto.NotificationPublicDTO;
 import com.ditossystem.ditos.firebase.FCMService;
 import com.ditossystem.ditos.notification.scheduler.NotificationSchedulerService;
 import com.ditossystem.ditos.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,7 +59,7 @@ public class NotificationService {
         Notification notification = notificationDTO.toEntity();
 
         // Preenche os campos createdDate e createdBy
-        notification.setCreatedDate(LocalDateTime.now());
+        notification.setCreatedDate(Instant.now());
         notification.setCreatedBy(securityUtils.getUserId());
 
         // Salva no banco
@@ -91,13 +90,6 @@ public class NotificationService {
                 .toList();
     }
 
-    // Método para buscar notificações ativas (retorna DTO público)
-    public List<NotificationPublicDTO> getScheduleNotifications() {
-        return notificationRepository.findByScheduleTrue().stream()
-                .map(NotificationPublicDTO::fromEntity)
-                .toList();
-    }
-
     // Método para buscar por ID (retorna DTO privado)
     public Optional<NotificationPrivateDTO> getNotificationById(String id) {
         return notificationRepository.findById(id)
@@ -113,7 +105,7 @@ public class NotificationService {
 
             existingNotification.setTitle(newNotificationDTO.title());
             existingNotification.setMessage(newNotificationDTO.message());
-            existingNotification.setDate(newNotificationDTO.date());
+            existingNotification.setDate(newNotificationDTO.date().toInstant());
             existingNotification.setSchedule(newNotificationDTO.schedule());
 
             Notification savedNotification = notificationRepository.save(existingNotification);

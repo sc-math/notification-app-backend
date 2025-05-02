@@ -1,11 +1,10 @@
 package com.ditossystem.ditos.coupon.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "coupon")
 public class Coupon {
@@ -21,19 +20,18 @@ public class Coupon {
     private double minValue;
     private double maxDiscount;
     private int limit;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime expirationDate;
+    private Instant expirationDate;
     private int quantity;
     private boolean active;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdDate;
+    private Instant createdDate;
     private String createdBy;
     private long clicks;
 
     public Coupon() {
     }
 
-    public Coupon(String code, String description, double discount, DiscountType discountType, double minValue, double maxDiscount, int limit, LocalDateTime expirationDate, int quantity, boolean active) {
+    public Coupon(String code, String description, double discount, DiscountType discountType, double minValue,
+                  double maxDiscount, int limit, Instant expirationDate, int quantity, boolean active) {
         this.code = code;
         this.description = description;
         this.discount = discount;
@@ -79,7 +77,7 @@ public class Coupon {
         return limit;
     }
 
-    public LocalDateTime getExpirationDate() {
+    public Instant getExpirationDate() {
         return expirationDate;
     }
 
@@ -99,7 +97,7 @@ public class Coupon {
         this.quantity = quantity;
     }
 
-    public void setExpirationDate(LocalDateTime expirationDate) {
+    public void setExpirationDate(Instant expirationDate) {
         this.expirationDate = expirationDate;
     }
 
@@ -135,11 +133,11 @@ public class Coupon {
         this.id = id;
     }
 
-    public LocalDateTime getCreatedDate() {
+    public Instant getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
+    public void setCreatedDate(Instant createdDate) {
         this.createdDate = createdDate;
     }
 

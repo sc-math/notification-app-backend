@@ -61,7 +61,7 @@ public class CouponSchedulerService {
         return TriggerBuilder.newTrigger()
                 .forJob(jobDetail)
                 .withIdentity("couponExpirationTrigger_" + coupon.getId(), "coupons-triggers")
-                .startAt(Date.from(coupon.getExpirationDate().atZone(ZoneId.of("America/Sao_Paulo")).toInstant()))
+                .startAt(Date.from(coupon.getExpirationDate()))
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())
                 .build();
     }

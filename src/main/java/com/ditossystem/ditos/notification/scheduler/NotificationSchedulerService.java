@@ -6,10 +6,7 @@ import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class NotificationSchedulerService {
@@ -67,7 +64,7 @@ public class NotificationSchedulerService {
         return TriggerBuilder.newTrigger()
                 .forJob(jobDetail)
                 .withIdentity("notificationTrigger_" + notification.getId(), "notifications-triggers")
-                .startAt(Date.from(notification.getDate().atZone(ZoneId.of("America/Sao_Paulo")).toInstant()))
+                .startAt(Date.from(notification.getDate()))
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())
                 .build();
     }

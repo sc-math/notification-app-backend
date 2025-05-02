@@ -2,9 +2,9 @@ package com.ditossystem.ditos.coupon.dto;
 
 import com.ditossystem.ditos.coupon.model.Coupon;
 import com.ditossystem.ditos.coupon.model.DiscountType;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 public record CouponPublicDTO(
         String id,
@@ -14,8 +14,7 @@ public record CouponPublicDTO(
         DiscountType discountType,
         double minValue,
         double maxDiscount,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime expirationDate
+        OffsetDateTime expirationDate
 ) {
 
     public static CouponPublicDTO fromEntity (Coupon coupon) {
@@ -27,7 +26,7 @@ public record CouponPublicDTO(
                 coupon.getDiscountType(),
                 coupon.getMinValue(),
                 coupon.getMaxDiscount(),
-                coupon.getExpirationDate()
+                OffsetDateTime.ofInstant(coupon.getExpirationDate(), ZoneId.of("America/Sao_Paulo"))
         );
     }
 }

@@ -1,11 +1,10 @@
 package com.ditossystem.ditos.notification.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "notification")
 public class Notification {
@@ -16,17 +15,15 @@ public class Notification {
 
     private String title;
     private String message;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime date;
+    private Instant date;
     private boolean schedule;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdDate;
+    private Instant createdDate;
     private String createdBy;
 
     public Notification() {
     }
 
-    public Notification(String id, String title, String message, LocalDateTime date, boolean schedule) {
+    public Notification(String id, String title, String message, Instant date, boolean schedule) {
         this.id = id;
         this.title = title;
         this.message = message;
@@ -58,11 +55,11 @@ public class Notification {
         this.message = message;
     }
 
-    public LocalDateTime getDate() {
+    public Instant getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(Instant date) {
         this.date = date;
     }
 
@@ -74,11 +71,11 @@ public class Notification {
         this.schedule = schedule;
     }
 
-    public LocalDateTime getCreatedDate() {
+    public Instant getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
+    public void setCreatedDate(Instant createdDate) {
         this.createdDate = createdDate;
     }
 

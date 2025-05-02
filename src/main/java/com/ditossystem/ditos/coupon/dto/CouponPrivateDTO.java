@@ -2,9 +2,9 @@ package com.ditossystem.ditos.coupon.dto;
 
 import com.ditossystem.ditos.coupon.model.Coupon;
 import com.ditossystem.ditos.coupon.model.DiscountType;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 public record CouponPrivateDTO(
         String id,
@@ -15,12 +15,10 @@ public record CouponPrivateDTO(
         double minValue,
         double maxDiscount,
         int limit,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime expirationDate,
+        OffsetDateTime expirationDate,
         int quantity,
         boolean active,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime createdDate,
+        OffsetDateTime createdDate,
         String createdBy,
         long clicks
 ) {
@@ -34,10 +32,10 @@ public record CouponPrivateDTO(
                 coupon.getMinValue(),
                 coupon.getMaxDiscount(),
                 coupon.getLimit(),
-                coupon.getExpirationDate(),
+                OffsetDateTime.ofInstant(coupon.getExpirationDate(), ZoneId.of("America/Sao_Paulo")),
                 coupon.getQuantity(),
                 coupon.isActive(),
-                coupon.getCreatedDate(),
+                OffsetDateTime.ofInstant(coupon.getCreatedDate(), ZoneId.of("America/Sao_Paulo")),
                 coupon.getCreatedBy(),
                 coupon.getClicks()
         );
@@ -45,6 +43,7 @@ public record CouponPrivateDTO(
 
     public Coupon ToEntity(){
         Coupon coupon = new Coupon();
+
         coupon.setCode(this.code);
         coupon.setDescription(this.description);
         coupon.setDiscount(this.discount);
@@ -52,12 +51,10 @@ public record CouponPrivateDTO(
         coupon.setMinValue(this.minValue);
         coupon.setMaxDiscount(this.maxDiscount);
         coupon.setLimit(this.limit);
-        coupon.setExpirationDate(this.expirationDate);
+        coupon.setExpirationDate(this.expirationDate.toInstant());
         coupon.setQuantity(this.quantity);
         coupon.setActive(this.active);
-        coupon.setCreatedDate(this.createdDate);
-        coupon.setCreatedBy(this.createdBy);
-        coupon.setClicks(this.clicks);
+
 
         return coupon;
     }

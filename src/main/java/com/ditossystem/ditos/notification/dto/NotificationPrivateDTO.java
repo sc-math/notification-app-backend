@@ -1,18 +1,16 @@
 package com.ditossystem.ditos.notification.dto;
 
 import com.ditossystem.ditos.notification.model.Notification;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 public record NotificationPrivateDTO(
         String id,
         String title,
         String message,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime date,
+        OffsetDateTime date,
         boolean schedule,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime createdDate,
+        OffsetDateTime createdDate,
         String createdBy
 ) {
     public static NotificationPrivateDTO fromEntity(Notification notification) {
@@ -20,9 +18,9 @@ public record NotificationPrivateDTO(
                 notification.getId(),
                 notification.getTitle(),
                 notification.getMessage(),
-                notification.getDate(),
+                OffsetDateTime.ofInstant(notification.getDate(), ZoneId.of("America/Sao_Paulo")),
                 notification.isSchedule(),
-                notification.getCreatedDate(),
+                OffsetDateTime.ofInstant(notification.getCreatedDate(), ZoneId.of("America/Sao_Paulo")),
                 notification.getCreatedBy()
         );
     }
@@ -32,10 +30,8 @@ public record NotificationPrivateDTO(
         Notification notification = new Notification();
         notification.setTitle(this.title);
         notification.setMessage(this.message);
-        notification.setDate(this.date);
+        notification.setDate(this.date.toInstant());
         notification.setSchedule(this.schedule);
-        notification.setCreatedDate(this.createdDate);
-        notification.setCreatedBy(this.createdBy);
 
         return notification;
     }

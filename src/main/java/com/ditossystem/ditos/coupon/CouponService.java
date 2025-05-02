@@ -8,7 +8,7 @@ import com.ditossystem.ditos.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +30,7 @@ public class CouponService {
     public CouponPrivateDTO saveCoupon(CouponPrivateDTO couponDTO){
 
         Coupon newCoupon = couponDTO.ToEntity();
-        newCoupon.setCreatedDate(LocalDateTime.now());
+        newCoupon.setCreatedDate(Instant.now());
         newCoupon.setCreatedBy(securityUtils.getUserId());
 
         Coupon savedCoupon = couponRepository.save(newCoupon);
@@ -81,7 +81,7 @@ public class CouponService {
             existingCoupon.setMinValue(newCoupon.minValue());
             existingCoupon.setMaxDiscount(newCoupon.maxDiscount());
             existingCoupon.setLimit(newCoupon.limit());
-            existingCoupon.setExpirationDate(newCoupon.expirationDate());
+            existingCoupon.setExpirationDate(newCoupon.expirationDate().toInstant());
             existingCoupon.setQuantity(newCoupon.quantity());
             existingCoupon.setActive(newCoupon.active());
 
