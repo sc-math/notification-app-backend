@@ -5,6 +5,8 @@ import com.ditossystem.ditos.coupon.dto.CouponPrivateDTO;
 import com.ditossystem.ditos.coupon.dto.CouponPublicDTO;
 import com.ditossystem.ditos.coupon.scheduler.CouponSchedulerService;
 import com.ditossystem.ditos.security.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import java.util.Optional;
 
 @Service
 public class CouponService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CouponService.class);
 
     private final CouponRepository couponRepository;
     private final CouponSchedulerService couponSchedulerService;
@@ -28,6 +32,8 @@ public class CouponService {
 
     // Função para criar cupons
     public CouponPrivateDTO saveCoupon(CouponPrivateDTO couponDTO){
+
+        logger.info("Criando novo cupom com código: {}", couponDTO.code());
 
         Coupon newCoupon = couponDTO.ToEntity();
         newCoupon.setCreatedDate(Instant.now());
@@ -69,6 +75,7 @@ public class CouponService {
 
     // Função para atualizar um cupom pelo Id
     public Optional<CouponPrivateDTO> updateCoupon(String id, CouponPrivateDTO newCoupon){
+        logger.info("Atualizando cupom ID: {}", id);
         Optional<Coupon> optionalCoupon = couponRepository.findById(id);
 
         if(optionalCoupon.isPresent()){
@@ -86,12 +93,14 @@ public class CouponService {
             existingCoupon.setActive(newCoupon.active());
 
             Coupon savedCoupon = couponRepository.save(existingCoupon);
+            logger.info("Cupom atualizado com sucesso: {}", savedCoupon);
 
             couponSchedulerService.setScheduler(savedCoupon);
 
             return Optional.of(CouponPrivateDTO.fromEntity(savedCoupon));
         }
         else{
+            logger.warn("Cupom com ID {} não encontrado para atualização", id);
             return Optional.empty();
         }
     }
@@ -100,11 +109,13 @@ public class CouponService {
     public boolean deleteCoupon(String id){
         Optional<Coupon> existing = couponRepository.findById(id);
         if(existing.isPresent()){
+            logger.info("Deletando cupom ID: {}", id);
             couponRepository.deleteById(id);
 
             return true;
         }
 
+        logger.warn("Tentativa de deletar cupom ID {} que não existe", id);
         return false;
     }
 
@@ -112,11 +123,15 @@ public class CouponService {
         Optional<Coupon> existing = couponRepository.findById(id);
 
         if(existing.isPresent()) {
+            logger.info("Incrementando clique no cupom ID: {}", id);
             Coupon coupon = existing.get();
 
             coupon.increaseClicks();
 
             couponRepository.save(coupon);
+            return;
         }
+
+        logger.warn("Tentativa de clicar em cupom ID {} que não existe", id);
     }
 }
