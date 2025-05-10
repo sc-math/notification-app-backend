@@ -2,17 +2,20 @@ package com.ditossystem.ditos.coupon;
 
 import com.ditossystem.ditos.coupon.dto.CouponPrivateDTO;
 import com.ditossystem.ditos.security.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/coupons")
 public class CouponController {
+    
+    private static final Logger logger = LoggerFactory.getLogger(CouponController.class);
 
     private final CouponService couponService;
     private final SecurityUtils securityUtils;
@@ -26,16 +29,19 @@ public class CouponController {
     // MÉTODOS POST
     @PostMapping
     public ResponseEntity<CouponPrivateDTO> createCoupon(@RequestBody CouponPrivateDTO couponDTO){
+        logger.info("POST /coupons - Criando cupom com dados: {}", couponDTO);
         CouponPrivateDTO savedCoupon = couponService.saveCoupon(couponDTO);
 
+        logger.info("Cupom criado com sucesso. ID: {}",savedCoupon.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCoupon);
     }
 
     // Endpoint para incrementar os clicks nos cupons
     @PostMapping("/click/{id}")
     public ResponseEntity<?> increaseCouponClicks(@PathVariable String id){
+        logger.info("POST /coupons/click/{} - Incrementando cliques", id);
         couponService.clickCoupon(id);
-
+        logger.info("Clique incrementado com sucesso para o cupom {}", id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -45,9 +51,14 @@ public class CouponController {
     @GetMapping
     public ResponseEntity<?> getAllCoupons(){
 
-        return securityUtils.isAuthenticated()
-                ? ResponseEntity.ok(couponService.getAllCoupons())
-                : ResponseEntity.ok(couponService.getActiveCoupons());
+        logger.info("GET /coupons - Buscando cupons");
+        if (securityUtils.isAuthenticated()) {
+            logger.info("Usuário autenticado - retornando todos os cupons");
+            return ResponseEntity.ok(couponService.getAllCoupons());
+        } else {
+            logger.info("Usuário mobile - retornando apenas cupons ativos");
+            return ResponseEntity.ok(couponService.getActiveCoupons());
+        }
     }
 
     // Endpoint para buscar cupons que possuem o mesmo código (GET)
@@ -55,44 +66,65 @@ public class CouponController {
     @GetMapping("/search")
     public ResponseEntity<List<CouponPrivateDTO>> getCouponsByCode(@RequestParam String code){
 
+        logger.info("GET /coupons/search?code={} - Buscando cupons por código", code);
         List<CouponPrivateDTO> coupons = couponService.getCouponByCode(code);
 
-        return coupons.isEmpty()
-                ? ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-                : ResponseEntity.ok(coupons);
+        if (coupons.isEmpty()) {
+            logger.warn("Nenhum cupom encontrado com código {}", code);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } else {
+            logger.info("Foram encontrados {} cupons com código {}", coupons.size(), code);
+            return ResponseEntity.ok(coupons);
+        }
     }
 
     // Endpoint para buscar um cupom pelo id (GET)
     @GetMapping("/{id}")
-    public ResponseEntity<CouponPrivateDTO> getCouponById(@PathVariable String id){
-        CouponPrivateDTO response = couponService.getCouponById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cupom não encontrado."));
+    public ResponseEntity<?> getCouponById(@PathVariable String id){
+        logger.info("GET /coupons/{} - Buscando cupom por ID", id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        var optionalCoupon = couponService.getCouponById(id);
+
+        if(optionalCoupon.isPresent()){
+            logger.info("Cupom encontrado: {}", optionalCoupon);
+            return ResponseEntity.ok(optionalCoupon.get());
+        }
+        logger.warn("Cupom com ID {} não encontrado", id);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cupom não encontrado");
     }
 
     // MÉTODO PUT
     // Endpoint para editar um Cupom (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<CouponPrivateDTO> updateCoupon(@PathVariable String id, @RequestBody CouponPrivateDTO couponDTO){
+    public ResponseEntity<?> updateCoupon(@PathVariable String id, @RequestBody CouponPrivateDTO couponDTO){
 
-        return couponService.updateCoupon(id, couponDTO)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        logger.info("PUT /coupons/{} - Atualizando cupom com dados: {}", id, couponDTO);
+
+        var optionalUpdated = couponService.updateCoupon(id, couponDTO);
+
+        if (optionalUpdated.isPresent()) {
+            logger.info("Cupom atualizado com sucesso: {}", optionalUpdated.get());
+            return ResponseEntity.ok(optionalUpdated.get());
+        } else {
+            logger.warn("Cupom com ID {} não encontrado para atualização", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cupom não encontrado");
+        }
     }
 
     // MÉTODO DELETE
     // Endpoint para deletar um cupom (DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCoupon(@PathVariable String id){
+        logger.info("DELETE /coupons/{} - Tentando deletar cupom", id);
         boolean result = couponService.deleteCoupon(id);
+
         if(result){
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body("Cupom deletado com sucesso!");
+            logger.info("Cupom {} deletado com sucesso", id);
+            return ResponseEntity.status(HttpStatus.OK).body("Cupom deletado com sucesso!");
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Cupom não encontrado!");
+        logger.warn("Cupom {} não encontrado para deleção", id);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cupom não encontrado!");
     }
 
 }
