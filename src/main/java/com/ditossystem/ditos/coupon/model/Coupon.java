@@ -1,5 +1,6 @@
 package com.ditossystem.ditos.coupon.model;
 
+import com.ditossystem.ditos.store.Store;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -26,23 +27,9 @@ public class Coupon {
     private Instant createdDate;
     private String createdBy;
     private long clicks;
+    private Store store;
 
     public Coupon() {
-    }
-
-    public Coupon(String code, String description, double discount, DiscountType discountType, double minValue,
-                  double maxDiscount, int limit, Instant expirationDate, int quantity, boolean active) {
-        this.code = code;
-        this.description = description;
-        this.discount = discount;
-        this.discountType = discountType;
-        this.minValue = minValue;
-        this.maxDiscount = maxDiscount;
-        this.limit = limit;
-        this.expirationDate = expirationDate;
-        this.quantity = quantity;
-        this.active = active;
-        this.clicks = 0;
     }
 
     public String getId() {
@@ -153,12 +140,16 @@ public class Coupon {
         return clicks;
     }
 
-    public void setClicks(long clicks) {
-        this.clicks = clicks;
-    }
-
     public void increaseClicks() {
         this.clicks++;
+    }
+
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
     }
 
     @Override
@@ -175,6 +166,8 @@ public class Coupon {
                 ", expirationDate=" + expirationDate +
                 ", quantity=" + quantity +
                 ", active=" + active +
+                ", store=" + store.getName() +
+                ", clicks=" + clicks +
                 '}';
     }
 }

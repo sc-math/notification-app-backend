@@ -5,12 +5,14 @@ import com.ditossystem.ditos.coupon.dto.CouponPrivateDTO;
 import com.ditossystem.ditos.coupon.dto.CouponPublicDTO;
 import com.ditossystem.ditos.coupon.scheduler.CouponSchedulerService;
 import com.ditossystem.ditos.security.SecurityUtils;
+import com.ditossystem.ditos.store.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,15 +49,38 @@ public class CouponService {
     }
 
     // Função para buscar todos os cupons
-    public List<CouponPrivateDTO> getAllCoupons(){
-        return couponRepository.findAll().stream()
+    public List<CouponPrivateDTO> getAllCoupons(Store store){
+
+        List<Coupon> coupons = new ArrayList<>();
+
+        // Se a loja for diferente de GENERAL, traz os da loja específica também
+        if (store != Store.GENERAL) {
+            coupons.addAll(couponRepository.findByStore(Store.GENERAL));
+            coupons.addAll(couponRepository.findByStore(store));
+        }
+        else{
+            coupons.addAll(couponRepository.findAll());
+        }
+
+        return coupons.stream()
                 .map(CouponPrivateDTO::fromEntity)
                 .toList();
     }
 
     // Função para buscar todos os cupons ativos
-    public List<CouponPublicDTO> getActiveCoupons(){
-        return couponRepository.findByActiveTrue().stream()
+    public List<CouponPublicDTO> getActiveCoupons(Store store){
+
+        List<Coupon> coupons = new ArrayList<>();
+
+        if(store != Store.GENERAL){
+            coupons.addAll(couponRepository.findByActiveTrueAndStore(Store.GENERAL));
+            coupons.addAll(couponRepository.findByActiveTrueAndStore(store));
+        }
+        else{
+            coupons.addAll(couponRepository.findByActiveTrue());
+        }
+
+        return coupons.stream()
                 .map(CouponPublicDTO::fromEntity)
                 .toList();
     }
@@ -91,6 +116,7 @@ public class CouponService {
             existingCoupon.setExpirationDate(newCoupon.expirationDate().toInstant());
             existingCoupon.setQuantity(newCoupon.quantity());
             existingCoupon.setActive(newCoupon.active());
+            existingCoupon.setStore(newCoupon.store());
 
             Coupon savedCoupon = couponRepository.save(existingCoupon);
             logger.info("Cupom atualizado com sucesso: {}", savedCoupon);

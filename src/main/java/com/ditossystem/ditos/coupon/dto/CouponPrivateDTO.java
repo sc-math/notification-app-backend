@@ -2,6 +2,7 @@ package com.ditossystem.ditos.coupon.dto;
 
 import com.ditossystem.ditos.coupon.model.Coupon;
 import com.ditossystem.ditos.coupon.model.DiscountType;
+import com.ditossystem.ditos.store.Store;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -20,7 +21,8 @@ public record CouponPrivateDTO(
         boolean active,
         OffsetDateTime createdDate,
         String createdBy,
-        long clicks
+        long clicks,
+        Store store
 ) {
     public static CouponPrivateDTO fromEntity(Coupon coupon){
         return new CouponPrivateDTO(
@@ -37,7 +39,8 @@ public record CouponPrivateDTO(
                 coupon.isActive(),
                 OffsetDateTime.ofInstant(coupon.getCreatedDate(), ZoneId.of("America/Sao_Paulo")),
                 coupon.getCreatedBy(),
-                coupon.getClicks()
+                coupon.getClicks(),
+                coupon.getStore()
         );
     }
 
@@ -54,7 +57,7 @@ public record CouponPrivateDTO(
         coupon.setExpirationDate(this.expirationDate.toInstant());
         coupon.setQuantity(this.quantity);
         coupon.setActive(this.active);
-
+        coupon.setStore(this.store);
 
         return coupon;
     }

@@ -2,6 +2,7 @@ package com.ditossystem.ditos.coupon;
 
 import com.ditossystem.ditos.coupon.dto.CouponPrivateDTO;
 import com.ditossystem.ditos.security.SecurityUtils;
+import com.ditossystem.ditos.store.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,16 +49,21 @@ public class CouponController {
     // MÉTODOS GETS
     // MÉTODO Get All
     // Endpoint para listar todos os cupons (GET)
+    // /coupons?search?storeCode=<code>
     @GetMapping
-    public ResponseEntity<?> getAllCoupons(){
+    public ResponseEntity<?> getAllCoupons(@RequestParam int storeCode){
 
         logger.info("GET /coupons - Buscando cupons");
         if (securityUtils.isAuthenticated()) {
             logger.info("Usuário autenticado - retornando todos os cupons");
-            return ResponseEntity.ok(couponService.getAllCoupons());
+
+            var response = couponService.getAllCoupons(Store.fromCode(storeCode));
+
+            return ResponseEntity.ok(response);
         } else {
             logger.info("Usuário mobile - retornando apenas cupons ativos");
-            return ResponseEntity.ok(couponService.getActiveCoupons());
+
+            return ResponseEntity.ok(couponService.getActiveCoupons(Store.fromCode(storeCode)));
         }
     }
 
