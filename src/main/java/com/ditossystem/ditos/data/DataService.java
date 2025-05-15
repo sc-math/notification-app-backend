@@ -2,7 +2,6 @@ package com.ditossystem.ditos.data;
 
 import com.ditossystem.ditos.coupon.CouponRepository;
 import com.ditossystem.ditos.notification.NotificationRepository;
-import com.ditossystem.ditos.notification.model.Notification;
 import com.ditossystem.ditos.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,19 +25,12 @@ public class DataService {
 
     public Map<String, Object> getDatas(){
         String id = securityUtils.getUserId();
-
-        long userCoupons = couponRepository.countByCreatedBy(id);
-        long totalCoupons = couponRepository.count();
-
-        long userNotification = notificationRepository.countByCreatedBy(id);
-        long totalNotification = notificationRepository.count();
-
         Map<String, Object> data = new HashMap<>();
 
-        data.put("userCoupons", userCoupons);
-        data.put("totalCoupons", totalCoupons);
-        data.put("userNotification", userNotification);
-        data.put("totalNotification", totalNotification);
+        data.put("userCoupons", couponRepository.countByCreatedBy(id));
+        data.put("totalCoupons", couponRepository.count());
+        data.put("userNotification", notificationRepository.countByCreatedBy(id));
+        data.put("totalNotification", notificationRepository.count());
 
         return data;
     }

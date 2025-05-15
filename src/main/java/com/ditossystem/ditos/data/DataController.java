@@ -1,5 +1,7 @@
 package com.ditossystem.ditos.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,8 @@ import java.util.Map;
 @RequestMapping("/data")
 public class DataController {
 
+    private static final Logger log = LoggerFactory.getLogger(DataController.class);
+
     private final DataService dataService;
 
     @Autowired
@@ -23,6 +27,8 @@ public class DataController {
     // MÉTODOS GET
     @GetMapping("")
     public ResponseEntity<Map<String, Object>> getData(){
+        log.info("GET /data - Buscando todos os dados");
+
         Map<String, Object> response = dataService.getDatas();
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
