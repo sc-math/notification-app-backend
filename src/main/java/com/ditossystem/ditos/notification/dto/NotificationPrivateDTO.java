@@ -1,6 +1,8 @@
 package com.ditossystem.ditos.notification.dto;
 
 import com.ditossystem.ditos.notification.model.Notification;
+import com.ditossystem.ditos.store.Store;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
@@ -11,7 +13,8 @@ public record NotificationPrivateDTO(
         OffsetDateTime date,
         boolean schedule,
         OffsetDateTime createdDate,
-        String createdBy
+        String createdBy,
+        Store store
 ) {
     public static NotificationPrivateDTO fromEntity(Notification notification) {
         return new NotificationPrivateDTO(
@@ -21,7 +24,8 @@ public record NotificationPrivateDTO(
                 OffsetDateTime.ofInstant(notification.getDate(), ZoneId.of("America/Sao_Paulo")),
                 notification.isSchedule(),
                 OffsetDateTime.ofInstant(notification.getCreatedDate(), ZoneId.of("America/Sao_Paulo")),
-                notification.getCreatedBy()
+                notification.getCreatedBy(),
+                notification.getStore()
         );
     }
 
@@ -32,6 +36,7 @@ public record NotificationPrivateDTO(
         notification.setMessage(this.message);
         notification.setDate(this.date.toInstant());
         notification.setSchedule(this.schedule);
+        notification.setStore(this.store);
 
         return notification;
     }

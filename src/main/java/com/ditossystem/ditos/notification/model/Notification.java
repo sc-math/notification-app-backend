@@ -1,5 +1,6 @@
 package com.ditossystem.ditos.notification.model;
 
+import com.ditossystem.ditos.store.Store;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,16 +20,9 @@ public class Notification {
     private boolean schedule;
     private Instant createdDate;
     private String createdBy;
+    private Store store;
 
     public Notification() {
-    }
-
-    public Notification(String id, String title, String message, Instant date, boolean schedule) {
-        this.id = id;
-        this.title = title;
-        this.message = message;
-        this.date = date;
-        this.schedule = schedule;
     }
 
     public String getId() {
@@ -87,14 +81,23 @@ public class Notification {
         this.createdBy = createdBy;
     }
 
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
     @Override
     public String toString() {
         return "Notification{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", message='" + message + '\'' +
-                ", date=" + date +
-                ", schedule=" + schedule +
+                ", date=" + date + '\'' +
+                ", schedule=" + schedule + '\'' +
+                ", store=" + store.getName() + '\'' +
                 '}';
     }
 }

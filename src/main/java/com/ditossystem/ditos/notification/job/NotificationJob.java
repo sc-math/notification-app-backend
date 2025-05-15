@@ -5,6 +5,8 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class NotificationJob implements Job {
 
     private final FCMService fcmService;
+    private static final Logger logger = LoggerFactory.getLogger(NotificationJob.class);
 
     @Autowired
     public NotificationJob(FCMService fcmService) {
@@ -25,18 +28,12 @@ public class NotificationJob implements Job {
         String title = dataMap.getString("title");
         String body = dataMap.getString("body");
 
-        System.out.println("Enviando notificação:");
-        System.out.println("Título: " + title);
-        System.out.println("Mensagem:" + body);
-
+        logger.info("Enviando Notificação - Título: {} | Mensagem: {}", title, body);
 
         try {
-            fcmService.sendNotificationToAll(
-                    title,
-                    body
-            );
+            fcmService.sendNotificationToAll(title, body);
         } catch (Exception e) {
-            System.out.println("Falha ao enviar notificação via FCM: " + e.getMessage());
+            logger.error("Falha ao enviar notificação via FCM: {}", e.getMessage());
         }
     }
 }

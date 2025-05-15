@@ -116,6 +116,7 @@ public class NotificationService {
             existingNotification.setMessage(newNotificationDTO.message());
             existingNotification.setDate(newNotificationDTO.date().toInstant());
             existingNotification.setSchedule(newNotificationDTO.schedule());
+            existingNotification.setStore(newNotificationDTO.store());
 
             Notification savedNotification = notificationRepository.save(existingNotification);
 

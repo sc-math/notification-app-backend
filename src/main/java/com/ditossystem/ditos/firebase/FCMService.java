@@ -1,13 +1,18 @@
 package com.ditossystem.ditos.firebase;
 
+import com.ditossystem.ditos.notification.NotificationController;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FCMService {
+
+    private static final Logger logger = LoggerFactory.getLogger(FCMService.class);
 
     public void sendNotificationToAll(String title, String body){
         Notification notification = Notification.builder()
@@ -22,10 +27,9 @@ public class FCMService {
 
         try{
             String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("Notificação enviada com sucesso! ID da mensagem enviada: "+ response);
+            logger.info("Notificação enviada com sucesso! ID da mensagem enviada: {}", response);
         } catch (FirebaseMessagingException e){
-            e.printStackTrace();
-            System.out.println("Erro ao enviar notificação: " + e.getMessage());
+            logger.error("Erro ao enviar notificação: {}", e.getMessage());
         }
     }
 }
