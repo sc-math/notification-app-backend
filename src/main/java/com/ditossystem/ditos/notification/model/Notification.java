@@ -1,11 +1,12 @@
 package com.ditossystem.ditos.notification.model;
 
-import com.ditossystem.ditos.store.Store;
+import com.ditossystem.ditos.notification.dto.NotificationRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.List;
 
 @Document(collection = "notification")
 public class Notification {
@@ -20,7 +21,7 @@ public class Notification {
     private boolean schedule;
     private Instant createdDate;
     private String createdBy;
-    private Store store;
+    private List<String> storeId;
 
     public Notification() {
     }
@@ -81,12 +82,20 @@ public class Notification {
         this.createdBy = createdBy;
     }
 
-    public Store getStore() {
-        return store;
+    public List<String> getStoreId() {
+        return storeId;
     }
 
-    public void setStore(Store store) {
-        this.store = store;
+    public void setStoreId(List<String> storeId) {
+        this.storeId = storeId;
+    }
+
+    public void updateFromDto(NotificationRequest dto){
+        this.setTitle(dto.title());
+        this.setMessage(dto.message());
+        this.setDate(dto.date().toInstant());
+        this.setSchedule(dto.schedule());
+        this.setStoreId(dto.storeId());
     }
 
     @Override
@@ -97,7 +106,7 @@ public class Notification {
                 ", message='" + message + '\'' +
                 ", date=" + date + '\'' +
                 ", schedule=" + schedule + '\'' +
-                ", store=" + store.getName() + '\'' +
+                ", store=" + storeId + '\'' +
                 '}';
     }
 }

@@ -6,7 +6,7 @@ import com.ditossystem.ditos.coupon.model.DiscountType;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
-public record CouponPublicDTO(
+public record CouponPublicResponse(
         String id,
         String code,
         String description,
@@ -17,8 +17,8 @@ public record CouponPublicDTO(
         OffsetDateTime expirationDate
 ) {
 
-    public static CouponPublicDTO fromEntity (Coupon coupon) {
-        return new CouponPublicDTO(
+    public static CouponPublicResponse toDto(Coupon coupon) {
+        return new CouponPublicResponse(
                 coupon.getId(),
                 coupon.getCode(),
                 coupon.getDescription(),

@@ -40,16 +40,23 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/coupons").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/coupons/click/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/coupons").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/coupons/click/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/coupons/store").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/coupons/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.PUT, "/coupons/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.DELETE, "/coupons/**").hasAnyRole("ADMIN", "USER")
 
-                        .requestMatchers(HttpMethod.GET, "/notifications").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/notifications").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/notifications/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.GET, "/notifications/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.PUT, "/notifications/**").hasAnyRole("ADMIN", "USER")
-                        .requestMatchers(HttpMethod.DELETE, "/notifications").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.DELETE, "/notifications/**").hasAnyRole("ADMIN", "USER")
+
+                        .requestMatchers(HttpMethod.POST, "/stores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/stores").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/stores/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.PUT, "/stores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/stores/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN")
@@ -57,7 +64,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/data").hasAnyRole("ADMIN", "USER")
 
-                        .requestMatchers(HttpMethod.POST, "/device").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/devices").permitAll()
 
                         .requestMatchers(
                                 "/v3/api-docs/**",
@@ -67,7 +74,6 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
-                .anonymous(AbstractHttpConfigurer::disable)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .build();
@@ -76,9 +82,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Ou origens específicas
+        configuration.setAllowedOriginPatterns(List.of("*")); // Ou origens específicas
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

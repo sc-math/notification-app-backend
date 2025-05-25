@@ -1,10 +1,12 @@
 package com.ditossystem.ditos.notification;
 
+import com.ditossystem.ditos.notification.dto.NotificationRequest;
+import com.ditossystem.ditos.notification.dto.NotificationResponse;
 import com.ditossystem.ditos.notification.model.Notification;
-import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
 import com.ditossystem.ditos.firebase.FCMService;
 import com.ditossystem.ditos.notification.scheduler.NotificationSchedulerService;
 import com.ditossystem.ditos.security.SecurityUtils;
+import com.ditossystem.ditos.store.StoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,46 +19,50 @@ import java.util.Optional;
 @Service
 public class NotificationService {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     private final NotificationRepository notificationRepository;
     private final FCMService fcmService;
     private final NotificationSchedulerService notificationSchedulerService;
     private final SecurityUtils securityUtils;
+    private final StoreService storeService;
 
     @Autowired
-    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService , NotificationSchedulerService notificationSchedulerService, SecurityUtils securityUtils) {
+    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService , NotificationSchedulerService notificationSchedulerService, SecurityUtils securityUtils, StoreService storeService) {
         this.notificationRepository = notificationRepository;
         this.fcmService = fcmService;
         this.notificationSchedulerService = notificationSchedulerService;
         this.securityUtils = securityUtils;
+        this.storeService = storeService;
     }
 
     // Envia as notificações
     private void sendNotification(Notification noti) {
         try {
-            logger.info("Enviando notificação: título={}, mensagem={}", noti.getTitle(), noti.getMessage());
+            log.info("Enviando notificação: título={}, mensagem={}", noti.getTitle(), noti.getMessage());
             fcmService.sendNotificationToAll(noti.getTitle(), noti.getMessage());
         } catch (Exception e) {
-            logger.error("Falha ao enviar notificação via FCM: {}", e.getMessage());
+            log.error("Falha ao enviar notificação via FCM: {}", e.getMessage());
         }
     }
 
     private void verifySchedule(Notification noti){
         if(noti.isSchedule()){
-            logger.info("Notificação agendada. Configurando agendamento para: {}", noti.getId());
+            log.info("Notificação agendada. Configurando agendamento para: {}", noti.getId());
             notificationSchedulerService.setScheduler(noti);
         }
         else{
-            logger.info("Enviando notificação imediatamente: {}", noti.getId());
+            log.info("Enviando notificação imediatamente: {}", noti.getId());
             sendNotification(noti);
         }
     }
 
     // Método para salvar notificações
-    public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
+    public NotificationResponse saveNotification(NotificationRequest notificationDTO) {
 
-        logger.info("Salvando notificação: {}", notificationDTO);
+        storeService.validateStores(notificationDTO.storeId());
+
+        log.info("Salvando notificação: {}", notificationDTO);
 
         Notification notification = notificationDTO.toEntity();
 
@@ -70,75 +76,72 @@ public class NotificationService {
         // Verifica agendamento para envio no FCM
         verifySchedule(savedNotification);
 
-        logger.info("Notificação salva com sucesso: {}", savedNotification.getId());
-        return NotificationPrivateDTO.fromEntity(savedNotification);
+        log.info("Notificação salva com sucesso: {}", savedNotification.getId());
+        return NotificationResponse.toDto(savedNotification);
     }
 
     // Método para reenviar notificações
-    private void resendNotification(String id) {
-        logger.info("Reenviando notificação com ID: {}", id);
+    public boolean resendNotification(String id) {
+        log.info("Reenviando notificação com ID: {}", id);
 
-        Optional<NotificationPrivateDTO> notificationDTO = getNotificationById(id);
+        Optional<NotificationResponse> notificationDTO = getNotificationById(id);
 
         if(notificationDTO.isEmpty()){
-            logger.warn("Notificação com ID {} não encontrada para reenviar", id);
-            return;
+            log.warn("Notificação com ID {} não encontrada para reenviar", id);
+            return false;
         }
 
         Notification noti = notificationDTO.get().toEntity();
 
         verifySchedule(noti);
+
+        return true;
     }
 
     // Método para buscar todas as notificações (retorna DTO privado)
-    public List<NotificationPrivateDTO> getAllNotifications() {
+    public List<NotificationResponse> getAllNotifications() {
         return notificationRepository.findAll().stream()
-                .map(NotificationPrivateDTO::fromEntity)
+                .map(NotificationResponse::toDto)
                 .toList();
     }
 
     // Método para buscar por ID (retorna DTO privado)
-    public Optional<NotificationPrivateDTO> getNotificationById(String id) {
+    public Optional<NotificationResponse> getNotificationById(String id) {
         return notificationRepository.findById(id)
-                .map(NotificationPrivateDTO::fromEntity);
+                .map(NotificationResponse::toDto);
     }
 
     // Método para atualizar (usa DTO)
-    public Optional<NotificationPrivateDTO> updateNotification(String id, NotificationPrivateDTO newNotificationDTO) {
-        logger.info("Atualizando notificação com ID: {} com novos dados", id);
+    public Optional<NotificationResponse> updateNotification(String id, NotificationRequest newNotification) {
+
+        storeService.validateStores(newNotification.storeId());
+
+        log.info("Atualizando notificação com ID: {} com novos dados", id);
 
         Optional<Notification> optionalNotification = notificationRepository.findById(id);
 
         if(optionalNotification.isPresent()){
             Notification existingNotification = optionalNotification.get();
-
-            existingNotification.setTitle(newNotificationDTO.title());
-            existingNotification.setMessage(newNotificationDTO.message());
-            existingNotification.setDate(newNotificationDTO.date().toInstant());
-            existingNotification.setSchedule(newNotificationDTO.schedule());
-            existingNotification.setStore(newNotificationDTO.store());
+            existingNotification.updateFromDto(newNotification);
 
             Notification savedNotification = notificationRepository.save(existingNotification);
 
-            resendNotification(savedNotification.getId());
-
-            logger.info("Notificação com ID {} atualizada com sucesso", id);
-            return Optional.of(NotificationPrivateDTO.fromEntity(savedNotification));
+            return Optional.of(NotificationResponse.toDto(savedNotification));
         }
-        logger.warn("Notificação com ID {} não encontrada para atualização", id);
+        log.warn("Notificação com ID {} não encontrada para atualização", id);
         return Optional.empty();
     }
 
     // Método para deletar (pode retornar um DTO genérico se desejar)
     public boolean deleteNotification(String id) {
-        logger.info("Tentando deletar notificação com ID: {}", id);
+        log.info("Tentando deletar notificação com ID: {}", id);
 
         if (notificationRepository.existsById(id)) {
             notificationRepository.deleteById(id);
-            logger.info("Notificação com ID {} deletada com sucesso", id);
+            log.info("Notificação com ID {} deletada com sucesso", id);
             return true;
         }
-        logger.warn("Notificação com ID {} não encontrada para deletar", id);
+        log.warn("Notificação com ID {} não encontrada para deletar", id);
         return false;
     }
 }

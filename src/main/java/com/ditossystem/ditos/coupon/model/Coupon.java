@@ -1,11 +1,13 @@
 package com.ditossystem.ditos.coupon.model;
 
-import com.ditossystem.ditos.store.Store;
+import com.ditossystem.ditos.coupon.dto.CouponCreateRequest;
+import com.ditossystem.ditos.store.model.Store;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.List;
 
 @Document(collection = "coupon")
 public class Coupon {
@@ -27,7 +29,7 @@ public class Coupon {
     private Instant createdDate;
     private String createdBy;
     private long clicks;
-    private Store store;
+    private List<String> storeId;
 
     public Coupon() {
     }
@@ -144,12 +146,26 @@ public class Coupon {
         this.clicks++;
     }
 
-    public Store getStore() {
-        return store;
+    public List<String> getStoreId() {
+        return storeId;
     }
 
-    public void setStore(Store store) {
-        this.store = store;
+    public void setStoreId(List<String> storeId) {
+        this.storeId = storeId;
+    }
+
+    public void updateFromDto(CouponCreateRequest dto){
+        this.setCode(dto.code());
+        this.setDescription(dto.description());
+        this.setDiscount(dto.discount());
+        this.setDiscountType(dto.discountType());
+        this.setMinValue(dto.minValue());
+        this.setMaxDiscount(dto.maxDiscount());
+        this.setLimit(dto.limit());
+        this.setExpirationDate(dto.expirationDate().toInstant());
+        this.setQuantity(dto.quantity());
+        this.setActive(dto.active());
+        this.setStoreId(dto.storeId());
     }
 
     @Override
@@ -166,7 +182,7 @@ public class Coupon {
                 ", expirationDate=" + expirationDate +
                 ", quantity=" + quantity +
                 ", active=" + active +
-                ", store=" + store.getName() +
+                ", store=" + storeId +
                 ", clicks=" + clicks +
                 '}';
     }

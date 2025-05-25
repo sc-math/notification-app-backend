@@ -1,7 +1,7 @@
 package com.ditossystem.ditos.device;
 
-import com.ditossystem.ditos.device.dto.RegisterRequestDeviceDTO;
-import com.ditossystem.ditos.device.dto.RegisterResponseDeviceDTO;
+import com.ditossystem.ditos.device.dto.DeviceRegisterRequest;
+import com.ditossystem.ditos.device.dto.DeviceRegisterResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/device")
+@RequestMapping("/devices")
 public class DeviceController {
 
 
@@ -27,11 +27,11 @@ public class DeviceController {
 
     // Method POST
     @PostMapping
-    public ResponseEntity<RegisterResponseDeviceDTO> createDevice(@RequestBody RegisterRequestDeviceDTO request){
-        log.info("POST /device - Criando dispositivo com FBT: {}", request.firebaseToken());
+    public ResponseEntity<DeviceRegisterResponse> createDevice(@RequestBody DeviceRegisterRequest request){
+        log.info("POST /devices - Criando dispositivo com FBT: {}", request.firebaseToken());
         String idSaved = deviceService.saveDevice(request.firebaseToken());
 
         log.info("Dispositivo criado com sucesso. ID: {}", idSaved);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new RegisterResponseDeviceDTO(idSaved));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new DeviceRegisterResponse(idSaved));
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class DeviceService {
@@ -31,5 +32,15 @@ public class DeviceService {
         Device savedDevice = deviceRepository.save(newDevice);
 
         return savedDevice.getId();
+    }
+
+    public void updateDate(String deviceId){
+        Optional<Device> optionalDevice = deviceRepository.findById(deviceId);
+
+        if (optionalDevice.isPresent()) {
+            Device device = optionalDevice.get();
+            device.setLastActive(Instant.now());
+            deviceRepository.save(device);
+        }
     }
 }

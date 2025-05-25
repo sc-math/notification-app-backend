@@ -2,12 +2,12 @@ package com.ditossystem.ditos.coupon.dto;
 
 import com.ditossystem.ditos.coupon.model.Coupon;
 import com.ditossystem.ditos.coupon.model.DiscountType;
-import com.ditossystem.ditos.store.Store;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
-public record CouponPrivateDTO(
+public record CouponPrivateResponse(
         String id,
         String code,
         String description,
@@ -22,10 +22,10 @@ public record CouponPrivateDTO(
         OffsetDateTime createdDate,
         String createdBy,
         long clicks,
-        Store store
+        List<String> storeId
 ) {
-    public static CouponPrivateDTO fromEntity(Coupon coupon){
-        return new CouponPrivateDTO(
+    public static CouponPrivateResponse toDto(Coupon coupon){
+        return new CouponPrivateResponse(
                 coupon.getId(),
                 coupon.getCode(),
                 coupon.getDescription(),
@@ -40,25 +40,7 @@ public record CouponPrivateDTO(
                 OffsetDateTime.ofInstant(coupon.getCreatedDate(), ZoneId.of("America/Sao_Paulo")),
                 coupon.getCreatedBy(),
                 coupon.getClicks(),
-                coupon.getStore()
+                coupon.getStoreId()
         );
-    }
-
-    public Coupon ToEntity(){
-        Coupon coupon = new Coupon();
-
-        coupon.setCode(this.code);
-        coupon.setDescription(this.description);
-        coupon.setDiscount(this.discount);
-        coupon.setDiscountType(this.discountType);
-        coupon.setMinValue(this.minValue);
-        coupon.setMaxDiscount(this.maxDiscount);
-        coupon.setLimit(this.limit);
-        coupon.setExpirationDate(this.expirationDate.toInstant());
-        coupon.setQuantity(this.quantity);
-        coupon.setActive(this.active);
-        coupon.setStore(this.store);
-
-        return coupon;
     }
 }

@@ -25,6 +25,12 @@ public class DataController {
     }
 
     // MÉTODOS GET
+
+    /**
+     * Retorna dados do sistema
+     *
+     * @return ResponseEntity com os dados
+     */
     @GetMapping("")
     public ResponseEntity<Map<String, Object>> getData(){
         log.info("GET /data - Buscando todos os dados");

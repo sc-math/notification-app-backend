@@ -1,12 +1,12 @@
 package com.ditossystem.ditos.notification.dto;
 
 import com.ditossystem.ditos.notification.model.Notification;
-import com.ditossystem.ditos.store.Store;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
-public record NotificationPrivateDTO(
+public record NotificationResponse(
         String id,
         String title,
         String message,
@@ -14,10 +14,10 @@ public record NotificationPrivateDTO(
         boolean schedule,
         OffsetDateTime createdDate,
         String createdBy,
-        Store store
+        List<String> storeId
 ) {
-    public static NotificationPrivateDTO fromEntity(Notification notification) {
-        return new NotificationPrivateDTO(
+    public static NotificationResponse toDto(Notification notification) {
+        return new NotificationResponse(
                 notification.getId(),
                 notification.getTitle(),
                 notification.getMessage(),
@@ -25,18 +25,20 @@ public record NotificationPrivateDTO(
                 notification.isSchedule(),
                 OffsetDateTime.ofInstant(notification.getCreatedDate(), ZoneId.of("America/Sao_Paulo")),
                 notification.getCreatedBy(),
-                notification.getStore()
+                notification.getStoreId()
         );
     }
 
-    // Método para converter DTO em entidade (usado no POST/PUT)
     public Notification toEntity() {
         Notification notification = new Notification();
+
         notification.setTitle(this.title);
         notification.setMessage(this.message);
         notification.setDate(this.date.toInstant());
         notification.setSchedule(this.schedule);
-        notification.setStore(this.store);
+        notification.setStoreId(this.storeId);
+        notification.setCreatedBy(this.createdBy);
+        notification.setCreatedDate(this.createdDate.toInstant());
 
         return notification;
     }
