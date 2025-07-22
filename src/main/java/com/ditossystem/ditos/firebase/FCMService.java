@@ -1,6 +1,5 @@
 package com.ditossystem.ditos.firebase;
 
-import com.ditossystem.ditos.notification.NotificationController;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -14,14 +13,17 @@ public class FCMService {
 
     private static final Logger logger = LoggerFactory.getLogger(FCMService.class);
 
-    public void sendNotificationToAll(String title, String body){
+    public void sendNotification(String title, String body, String storeId){
+
+        logger.info("Preparando notificação: Título - {} | Corpo - {} | Tópico - {}", title, body, storeId);
+
         Notification notification = Notification.builder()
                 .setTitle(title)
                 .setBody(body)
                 .build();
 
         Message message = Message.builder()
-                .setTopic("Coupons")
+                .setTopic(storeId)
                 .setNotification(notification)
                 .build();
 

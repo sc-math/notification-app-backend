@@ -151,7 +151,7 @@ public class NotificationController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteNotification(@PathVariable String id) {
-        log.info("DELETE /notifications/{} - Tentando deletar notificação", id);
+        log.info("DELETE /notifications/{} - Tentando   deletar notificação", id);
         boolean result = notificationService.deleteNotification(id);
 
         if(result){

@@ -53,6 +53,10 @@ public class StoreService {
                 .toList();
     }
 
+    public Optional<Store> getStore(String id){
+        return storeRepository.findById(id);
+    }
+
     /**
      * Atualiza os dados de uma loja existente com base no ID.
      *

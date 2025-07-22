@@ -52,6 +52,7 @@ public class NotificationSchedulerService {
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("title", notification.getTitle());
         jobDataMap.put("body", notification.getMessage());
+        jobDataMap.put("stores", notification.getStoreId());
 
         return JobBuilder.newJob(NotificationJob.class)
                 .withIdentity("notificationJob_" + notification.getId(), "notifications")

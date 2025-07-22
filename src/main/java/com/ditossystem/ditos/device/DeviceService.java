@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -42,5 +43,10 @@ public class DeviceService {
             device.setLastActive(Instant.now());
             deviceRepository.save(device);
         }
+    }
+
+    public long countActiveDevice(int dias){
+        Instant limit = Instant.now().minus(Duration.ofDays(dias));
+        return deviceRepository.countByLastActiveAfter(limit);
     }
 }

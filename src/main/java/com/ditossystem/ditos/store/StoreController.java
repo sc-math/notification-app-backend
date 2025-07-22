@@ -22,7 +22,6 @@ public class StoreController {
     }
 
     // MÉTODOS POST
-
     /**
      * Cria uma loja com base nos dados fornecidos.
      *
@@ -39,7 +38,6 @@ public class StoreController {
     }
 
     // MÉTODOS GETS
-
     /**
      * Busca todas as lojas cadastradas
      *
@@ -52,8 +50,29 @@ public class StoreController {
         return ResponseEntity.ok(storeService.getAllStores());
     }
 
-    // MÉTODOS PUT
+    /**
+     * Busca uma loja existente com base no ID fornecido
+     *
+     * @param id Idenficador da loja a ser buscada
+     * @return ResponseEntity com os dados da loja ou status 404 (Not Found) se a loja não existir.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getStore(@PathVariable String id){
+        log.info("GET /stores/{} - Buscando Loja", id);
 
+        var optionalStore = storeService.getStore(id);
+
+        if(optionalStore.isPresent()){
+            log.info("Loja encontrada!");
+            return ResponseEntity.ok(optionalStore.get());
+        }
+        else{
+            log.info("Loja com id {} não encontrada!", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Loja não encontrada");
+        }
+    }
+
+    // MÉTODOS PUT
     /**
      * Atualiza uma loja existente com base no ID fornecido e nos novos dados.
      *
@@ -79,7 +98,6 @@ public class StoreController {
     }
 
     // MÉTODOS DELETE
-
     /**
      * Deleta uma loja com base no ID fornecido.
      *

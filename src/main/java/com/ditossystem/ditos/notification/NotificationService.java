@@ -40,7 +40,12 @@ public class NotificationService {
     private void sendNotification(Notification noti) {
         try {
             log.info("Enviando notificação: título={}, mensagem={}", noti.getTitle(), noti.getMessage());
-            fcmService.sendNotificationToAll(noti.getTitle(), noti.getMessage());
+
+            List<String> storeIds = noti.getStoreId();
+
+            for (String storeId : storeIds) {
+                fcmService.sendNotification(noti.getTitle(), noti.getMessage(), storeId);
+            }
         } catch (Exception e) {
             log.error("Falha ao enviar notificação via FCM: {}", e.getMessage());
         }
