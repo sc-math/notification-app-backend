@@ -1,5 +1,6 @@
 package com.ditossystem.ditos.store;
 
+import com.ditossystem.ditos.device.DeviceService;
 import com.ditossystem.ditos.store.dto.StoreCreateRequest;
 import com.ditossystem.ditos.store.dto.StoreResponse;
 import org.slf4j.Logger;
@@ -15,10 +16,12 @@ public class StoreController {
     private static final Logger log = LoggerFactory.getLogger(StoreController.class);
 
     private final StoreService storeService;
+    private final DeviceService deviceService;
 
     @Autowired
-    public StoreController(StoreService storeService) {
+    public StoreController(StoreService storeService, DeviceService deviceService) {
         this.storeService = storeService;
+        this.deviceService = deviceService;
     }
 
     // MÉTODOS POST
@@ -44,9 +47,13 @@ public class StoreController {
      * @return ResponseEntity com a lista de lojas e status 200 (OK)
      */
     @GetMapping
-    public ResponseEntity<?> getAllStores(){
+    public ResponseEntity<?> getAllStores(
+            @RequestParam(required = false) String deviceId){
         log.info("GET /stores - Buscando lojas");
 
+        if(deviceId != null && !deviceId.isBlank()){
+            deviceService.updateDate(deviceId);
+        }
         return ResponseEntity.ok(storeService.getAllStores());
     }
 
