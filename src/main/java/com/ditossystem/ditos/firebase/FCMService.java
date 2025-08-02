@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class FCMService {
 
-    private static final Logger logger = LoggerFactory.getLogger(FCMService.class);
+    private static final Logger log = LoggerFactory.getLogger(FCMService.class);
 
     public void sendNotification(String title, String body, String storeId){
 
-        logger.info("Preparando notificação: Título - {} | Corpo - {} | Tópico - {}", title, body, storeId);
+        log.info("Preparando notificação: \nTítulo: {}\nCorpo: {}\nTópico: {}", title, body, storeId);
 
         Notification notification = Notification.builder()
                 .setTitle(title)
@@ -27,11 +27,13 @@ public class FCMService {
                 .setNotification(notification)
                 .build();
 
+        log.info("{}",message);
+
         try{
             String response = FirebaseMessaging.getInstance().send(message);
-            logger.info("Notificação enviada com sucesso! ID da mensagem enviada: {}", response);
+            log.info("Notificação enviada com sucesso! ID da mensagem enviada: {}", response);
         } catch (FirebaseMessagingException e){
-            logger.error("Erro ao enviar notificação: {}", e.getMessage());
+            log.error("Erro ao enviar notificação: {}", e.getMessage());
         }
     }
 }

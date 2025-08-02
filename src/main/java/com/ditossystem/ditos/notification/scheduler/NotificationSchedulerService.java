@@ -6,6 +6,7 @@ import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Service
@@ -37,6 +38,11 @@ public class NotificationSchedulerService {
             }
 
             // Criando o novo job e trigger com a data de expiração atualizada
+            if (noti.getDate().isBefore(Instant.now())) {
+                System.out.println("Data da notificação já passou. Agendamento ignorado.");
+                return;
+            }
+
             JobDetail jobDetail = buildJobDetail(noti);
             Trigger trigger = buildJobTrigger(jobDetail, noti);
 
@@ -44,7 +50,7 @@ public class NotificationSchedulerService {
             System.out.println("Novo agendamento criado para a notificação \n" + noti);
 
         } catch (SchedulerException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao agendar notificação com ID " + noti.getId(), e);
         }
     }
 

@@ -58,13 +58,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/stores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/stores/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/users").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/data").hasAnyRole("ADMIN", "USER")
 
                         .requestMatchers(HttpMethod.POST, "/devices").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/devices/ativos").hasAnyRole("ADMIN", "USER")
 
                         .requestMatchers(
                                 "/v3/api-docs/**",

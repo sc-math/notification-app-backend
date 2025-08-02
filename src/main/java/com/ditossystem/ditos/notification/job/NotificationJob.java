@@ -15,7 +15,7 @@ import java.util.List;
 public class NotificationJob implements Job {
 
     private final FCMService fcmService;
-    private static final Logger logger = LoggerFactory.getLogger(NotificationJob.class);
+    private static final Logger log = LoggerFactory.getLogger(NotificationJob.class);
 
     @Autowired
     public NotificationJob(FCMService fcmService) {
@@ -32,7 +32,13 @@ public class NotificationJob implements Job {
         @SuppressWarnings("unchecked")
         List<String> storeIds = (List<String>) dataMap.get("stores");
 
-        logger.info("Enviando Notificação - Título: {} | Mensagem: {}", title, body);
+        if (title == null || title.isBlank() || body == null || body.isBlank()) {
+            log.warn("Título ou corpo da notificação está vazio.");
+            return;
+        }
+
+        log.info("Enviando Notificação - Título: {} | Mensagem: {}", title, body);
+        log.info("Lojas destino: {}", storeIds);
 
         try {
             if (storeIds != null) {
@@ -40,10 +46,11 @@ public class NotificationJob implements Job {
                     fcmService.sendNotification(title, body, storeId);
                 }
             } else {
-                logger.warn("Nenhuma loja encontrada para enviar a notificação.");
+                log.warn("Nenhuma loja encontrada para enviar a notificação.");
             }
         } catch (Exception e) {
-            logger.error("Falha ao enviar notificação agendada via FCM: {}", e.getMessage());
+            log.error("Falha ao enviar notificação agendada via FCM", e);
         }
     }
+
 }
