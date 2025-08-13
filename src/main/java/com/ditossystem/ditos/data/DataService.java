@@ -1,6 +1,6 @@
 package com.ditossystem.ditos.data;
 
-import com.ditossystem.ditos.coupon.CouponRepository;
+import com.ditossystem.ditos.coupon.Repository.CouponRepository;
 import com.ditossystem.ditos.notification.NotificationRepository;
 import com.ditossystem.ditos.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;

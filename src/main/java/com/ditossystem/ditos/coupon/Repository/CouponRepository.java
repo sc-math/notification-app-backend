@@ -1,4 +1,4 @@
-package com.ditossystem.ditos.coupon;
+package com.ditossystem.ditos.coupon.Repository;
 
 import com.ditossystem.ditos.coupon.model.Coupon;
 

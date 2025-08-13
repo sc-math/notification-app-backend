@@ -1,5 +1,6 @@
 package com.ditossystem.ditos.coupon;
 
+import com.ditossystem.ditos.coupon.dto.CouponClickRequest;
 import com.ditossystem.ditos.coupon.dto.CouponCreateRequest;
 import com.ditossystem.ditos.coupon.dto.CouponPrivateResponse;
 import com.ditossystem.ditos.device.DeviceService;
@@ -50,15 +51,14 @@ public class CouponController {
     /**
      * Incrementa o contador de Clicks de um cupom específico.
      *
-     * @param id identificador do cupom a ser atualizado
      * @return ResponseEntity com o status HTTP 200 (OK)
      */
-    @PostMapping("/click/{id}")
-    public ResponseEntity<String> increaseCouponClicks(@PathVariable String id){
-        log.info("POST /coupons/click/{} - Incrementando cliques", id);
-        couponService.clickCoupon(id);
-        log.info("Clique incrementado com sucesso para o cupom {}", id);
+    @PostMapping("/click")
+    public ResponseEntity<String> increaseCouponClicks(@RequestBody CouponClickRequest clickDTO){
+        log.info("POST /coupons/click - Incrementando cliques");
+        couponService.clickCoupon(clickDTO.couponId(), clickDTO.deviceId());
         return ResponseEntity.status(HttpStatus.OK).build();
+
     }
 
     // MÉTODOS GET
@@ -147,7 +147,6 @@ public class CouponController {
     }
 
     // MÉTODOS PUT
-
     /**
      * Atualiza um cupom com base no ID e nos novos dados fornecidos.
      *
@@ -173,7 +172,6 @@ public class CouponController {
     }
 
     // MÉTODOS DELETE
-
     /**
      * Deleta um cupom com base no ID informado.
      *

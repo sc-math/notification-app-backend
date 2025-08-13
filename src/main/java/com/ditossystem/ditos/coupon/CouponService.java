@@ -1,15 +1,16 @@
 package com.ditossystem.ditos.coupon;
 
+import com.ditossystem.ditos.coupon.Repository.CouponClickRepository;
+import com.ditossystem.ditos.coupon.Repository.CouponRepository;
 import com.ditossystem.ditos.coupon.dto.CouponCreateRequest;
 import com.ditossystem.ditos.coupon.model.Coupon;
 import com.ditossystem.ditos.coupon.dto.CouponPrivateResponse;
 import com.ditossystem.ditos.coupon.dto.CouponPublicResponse;
+import com.ditossystem.ditos.coupon.model.CouponClick;
 import com.ditossystem.ditos.coupon.scheduler.CouponSchedulerService;
-import com.ditossystem.ditos.exception.StoreNotFoundException;
 import com.ditossystem.ditos.security.SecurityUtils;
-import com.ditossystem.ditos.store.StoreRepository;
 import com.ditossystem.ditos.store.StoreService;
-import com.ditossystem.ditos.store.model.Store;
+import com.mongodb.DuplicateKeyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,21 @@ public class CouponService {
     private static final Logger log = LoggerFactory.getLogger(CouponService.class);
 
     private final CouponRepository couponRepository;
+    private final CouponClickRepository couponClickRepository;
+
     private final CouponSchedulerService couponSchedulerService;
     private final SecurityUtils securityUtils;
     private final StoreService storeService;
 
     @Autowired
-    public CouponService(CouponRepository couponRepository, CouponSchedulerService couponSchedulerService, SecurityUtils securityUtils, StoreService storeService) {
+    public CouponService(CouponRepository couponRepository,
+                         CouponClickRepository couponClickRepository,
+                         CouponSchedulerService couponSchedulerService,
+                         SecurityUtils securityUtils,
+                         StoreService storeService) {
+
         this.couponRepository = couponRepository;
+        this.couponClickRepository = couponClickRepository;
         this.couponSchedulerService = couponSchedulerService;
         this.securityUtils = securityUtils;
         this.storeService = storeService;
@@ -133,19 +142,19 @@ public class CouponService {
         return false;
     }
 
-    public void clickCoupon(String id){
-        Optional<Coupon> existing = couponRepository.findById(id);
+    public void clickCoupon(String couponId, String deviceId){
 
-        if(existing.isPresent()) {
-            log.info("Incrementando clique no cupom ID: {}", id);
-            Coupon coupon = existing.get();
+        try{
+            couponClickRepository.save(new CouponClick(couponId, deviceId, Instant.now()));
 
-            coupon.increaseClicks();
+            couponRepository.findById(couponId).ifPresent(coupon -> {
+                coupon.increaseClicks();
+                couponRepository.save(coupon);
+            });
 
-            couponRepository.save(coupon);
-            return;
+            log.info("Clique registrado para cupom {} pelo device {}", couponId, deviceId);
+        } catch (DuplicateKeyException e) {
+            log.info("Device {} já clicou no cupom {}, ignorando incremento", deviceId, couponId);
         }
-
-        log.warn("Tentativa de clicar em cupom ID {} que não existe", id);
     }
 }
