@@ -1,11 +1,12 @@
 package com.ditossystem.ditos.notification.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ditossystem.ditos.notification.dto.NotificationRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.List;
 
 @Document(collection = "notification")
 public class Notification {
@@ -16,22 +17,13 @@ public class Notification {
 
     private String title;
     private String message;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime date;
+    private Instant date;
     private boolean schedule;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdDate;
+    private Instant createdDate;
     private String createdBy;
+    private List<String> storeId;
 
     public Notification() {
-    }
-
-    public Notification(String id, String title, String message, LocalDateTime date, boolean schedule) {
-        this.id = id;
-        this.title = title;
-        this.message = message;
-        this.date = date;
-        this.schedule = schedule;
     }
 
     public String getId() {
@@ -58,11 +50,11 @@ public class Notification {
         this.message = message;
     }
 
-    public LocalDateTime getDate() {
+    public Instant getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(Instant date) {
         this.date = date;
     }
 
@@ -74,11 +66,11 @@ public class Notification {
         this.schedule = schedule;
     }
 
-    public LocalDateTime getCreatedDate() {
+    public Instant getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
+    public void setCreatedDate(Instant createdDate) {
         this.createdDate = createdDate;
     }
 
@@ -90,14 +82,31 @@ public class Notification {
         this.createdBy = createdBy;
     }
 
+    public List<String> getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(List<String> storeId) {
+        this.storeId = storeId;
+    }
+
+    public void updateFromDto(NotificationRequest dto){
+        this.setTitle(dto.title());
+        this.setMessage(dto.message());
+        this.setDate(dto.date().toInstant());
+        this.setSchedule(dto.schedule());
+        this.setStoreId(dto.storeId());
+    }
+
     @Override
     public String toString() {
         return "Notification{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", message='" + message + '\'' +
-                ", date=" + date +
-                ", schedule=" + schedule +
+                ", date=" + date + '\'' +
+                ", schedule=" + schedule + '\'' +
+                ", store=" + storeId + '\'' +
                 '}';
     }
 }

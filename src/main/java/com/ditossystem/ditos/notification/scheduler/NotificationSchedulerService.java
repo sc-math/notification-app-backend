@@ -6,10 +6,8 @@ import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class NotificationSchedulerService {
@@ -40,6 +38,11 @@ public class NotificationSchedulerService {
             }
 
             // Criando o novo job e trigger com a data de expiração atualizada
+            if (noti.getDate().isBefore(Instant.now())) {
+                System.out.println("Data da notificação já passou. Agendamento ignorado.");
+                return;
+            }
+
             JobDetail jobDetail = buildJobDetail(noti);
             Trigger trigger = buildJobTrigger(jobDetail, noti);
 
@@ -47,7 +50,7 @@ public class NotificationSchedulerService {
             System.out.println("Novo agendamento criado para a notificação \n" + noti);
 
         } catch (SchedulerException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao agendar notificação com ID " + noti.getId(), e);
         }
     }
 
@@ -55,6 +58,7 @@ public class NotificationSchedulerService {
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("title", notification.getTitle());
         jobDataMap.put("body", notification.getMessage());
+        jobDataMap.put("stores", notification.getStoreId());
 
         return JobBuilder.newJob(NotificationJob.class)
                 .withIdentity("notificationJob_" + notification.getId(), "notifications")
@@ -67,7 +71,7 @@ public class NotificationSchedulerService {
         return TriggerBuilder.newTrigger()
                 .forJob(jobDetail)
                 .withIdentity("notificationTrigger_" + notification.getId(), "notifications-triggers")
-                .startAt(Date.from(notification.getDate().atZone(ZoneId.of("America/Sao_Paulo")).toInstant()))
+                .startAt(Date.from(notification.getDate()))
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())
                 .build();
     }

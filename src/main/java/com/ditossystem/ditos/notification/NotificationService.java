@@ -1,66 +1,78 @@
 package com.ditossystem.ditos.notification;
 
+import com.ditossystem.ditos.notification.dto.NotificationRequest;
+import com.ditossystem.ditos.notification.dto.NotificationResponse;
 import com.ditossystem.ditos.notification.model.Notification;
-import com.ditossystem.ditos.notification.dto.NotificationPrivateDTO;
-import com.ditossystem.ditos.notification.dto.NotificationPublicDTO;
 import com.ditossystem.ditos.firebase.FCMService;
 import com.ditossystem.ditos.notification.scheduler.NotificationSchedulerService;
 import com.ditossystem.ditos.security.SecurityUtils;
+import com.ditossystem.ditos.store.StoreService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class NotificationService {
 
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
+
     private final NotificationRepository notificationRepository;
     private final FCMService fcmService;
     private final NotificationSchedulerService notificationSchedulerService;
     private final SecurityUtils securityUtils;
+    private final StoreService storeService;
 
     @Autowired
-    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService , NotificationSchedulerService notificationSchedulerService, SecurityUtils securityUtils) {
+    public NotificationService(NotificationRepository notificationRepository, FCMService fcmService , NotificationSchedulerService notificationSchedulerService, SecurityUtils securityUtils, StoreService storeService) {
         this.notificationRepository = notificationRepository;
         this.fcmService = fcmService;
         this.notificationSchedulerService = notificationSchedulerService;
         this.securityUtils = securityUtils;
+        this.storeService = storeService;
     }
 
     // Envia as notificações
     private void sendNotification(Notification noti) {
         try {
-            fcmService.sendNotificationToAll(
-                    noti.getTitle(),
-                    noti.getMessage()
-            );
+            log.info("Enviando notificação: título={}, mensagem={}", noti.getTitle(), noti.getMessage());
 
+            List<String> storeIds = noti.getStoreId();
+
+            for (String storeId : storeIds) {
+                fcmService.sendNotification(noti.getTitle(), noti.getMessage(), storeId);
+            }
         } catch (Exception e) {
-            System.out.println("Falha ao enviar notificação via FCM: " + e.getMessage());
+            log.error("Falha ao enviar notificação via FCM: {}", e.getMessage());
         }
-
     }
 
     private void verifySchedule(Notification noti){
         if(noti.isSchedule()){
+            log.info("Notificação agendada. Configurando agendamento para: {}", noti.getId());
             notificationSchedulerService.setScheduler(noti);
         }
         else{
+            log.info("Enviando notificação imediatamente: {}", noti.getId());
             sendNotification(noti);
         }
     }
 
     // Método para salvar notificações
-    public NotificationPrivateDTO saveNotification(NotificationPrivateDTO notificationDTO) {
+    public NotificationResponse saveNotification(NotificationRequest notificationDTO) {
 
-        System.out.println("Salvando notificação...");
+        storeService.validateStores(notificationDTO.storeId());
+
+        log.info("Salvando notificação: {}", notificationDTO);
 
         Notification notification = notificationDTO.toEntity();
 
         // Preenche os campos createdDate e createdBy
-        notification.setCreatedDate(LocalDateTime.now());
+        notification.setCreatedDate(Instant.now());
         notification.setCreatedBy(securityUtils.getUserId());
 
         // Salva no banco
@@ -69,70 +81,72 @@ public class NotificationService {
         // Verifica agendamento para envio no FCM
         verifySchedule(savedNotification);
 
-        return NotificationPrivateDTO.fromEntity(savedNotification);
+        log.info("Notificação salva com sucesso: {}", savedNotification.getId());
+        return NotificationResponse.toDto(savedNotification);
     }
 
     // Método para reenviar notificações
-    private void resendNotification(String id) {
-        Optional<NotificationPrivateDTO> notificationDTO = getNotificationById(id);
+    public boolean resendNotification(String id) {
+        log.info("Reenviando notificação com ID: {}", id);
 
-        if(notificationDTO.isEmpty())
-            return;
+        Optional<NotificationResponse> notificationDTO = getNotificationById(id);
+
+        if(notificationDTO.isEmpty()){
+            log.warn("Notificação com ID {} não encontrada para reenviar", id);
+            return false;
+        }
 
         Notification noti = notificationDTO.get().toEntity();
 
         verifySchedule(noti);
+
+        return true;
     }
 
     // Método para buscar todas as notificações (retorna DTO privado)
-    public List<NotificationPrivateDTO> getAllNotifications() {
+    public List<NotificationResponse> getAllNotifications() {
         return notificationRepository.findAll().stream()
-                .map(NotificationPrivateDTO::fromEntity)
-                .toList();
-    }
-
-    // Método para buscar notificações ativas (retorna DTO público)
-    public List<NotificationPublicDTO> getScheduleNotifications() {
-        return notificationRepository.findByScheduleTrue().stream()
-                .map(NotificationPublicDTO::fromEntity)
+                .map(NotificationResponse::toDto)
                 .toList();
     }
 
     // Método para buscar por ID (retorna DTO privado)
-    public Optional<NotificationPrivateDTO> getNotificationById(String id) {
+    public Optional<NotificationResponse> getNotificationById(String id) {
         return notificationRepository.findById(id)
-                .map(NotificationPrivateDTO::fromEntity);
+                .map(NotificationResponse::toDto);
     }
 
     // Método para atualizar (usa DTO)
-    public Optional<NotificationPrivateDTO> updateNotification(String id, NotificationPrivateDTO newNotificationDTO) {
+    public Optional<NotificationResponse> updateNotification(String id, NotificationRequest newNotification) {
+
+        storeService.validateStores(newNotification.storeId());
+
+        log.info("Atualizando notificação com ID: {} com novos dados", id);
+
         Optional<Notification> optionalNotification = notificationRepository.findById(id);
 
         if(optionalNotification.isPresent()){
             Notification existingNotification = optionalNotification.get();
-
-            existingNotification.setTitle(newNotificationDTO.title());
-            existingNotification.setMessage(newNotificationDTO.message());
-            existingNotification.setDate(newNotificationDTO.date());
-            existingNotification.setSchedule(newNotificationDTO.schedule());
+            existingNotification.updateFromDto(newNotification);
 
             Notification savedNotification = notificationRepository.save(existingNotification);
 
-            resendNotification(savedNotification.getId());
-
-            return Optional.of(NotificationPrivateDTO.fromEntity(savedNotification));
+            return Optional.of(NotificationResponse.toDto(savedNotification));
         }
-        else{
-            return Optional.empty();
-        }
+        log.warn("Notificação com ID {} não encontrada para atualização", id);
+        return Optional.empty();
     }
 
     // Método para deletar (pode retornar um DTO genérico se desejar)
     public boolean deleteNotification(String id) {
+        log.info("Tentando deletar notificação com ID: {}", id);
+
         if (notificationRepository.existsById(id)) {
             notificationRepository.deleteById(id);
+            log.info("Notificação com ID {} deletada com sucesso", id);
             return true;
         }
+        log.warn("Notificação com ID {} não encontrada para deletar", id);
         return false;
     }
 }

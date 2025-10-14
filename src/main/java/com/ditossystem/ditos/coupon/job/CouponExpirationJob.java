@@ -1,6 +1,6 @@
 package com.ditossystem.ditos.coupon.job;
 
-import com.ditossystem.ditos.coupon.CouponRepository;
+import com.ditossystem.ditos.coupon.Repository.CouponRepository;
 import com.ditossystem.ditos.coupon.model.Coupon;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;

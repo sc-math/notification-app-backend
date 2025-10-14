@@ -4,6 +4,8 @@ import com.ditossystem.ditos.exception.UserAlreadyExistsException;
 import com.ditossystem.ditos.user.dto.RegisterDTO;
 import com.ditossystem.ditos.user.model.User;
 import com.ditossystem.ditos.user.dto.UserDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -25,6 +29,7 @@ public class UserService {
 
     // Método para buscar todos os users
     public List<UserDTO> getAllUsers(){
+        logger.info("Buscando todos os usuários");
         return userRepository.findAll().stream()
                 .map(UserDTO::fromEntity)
                 .toList();
@@ -70,8 +75,11 @@ public class UserService {
     }
 
     public UserDTO registerUser(RegisterDTO data){
-        if(userRepository.findByLogin(data.login()) != null)
+        logger.info("Registrando novo usuário com login: {}", data.login());
+        if(userRepository.findByLogin(data.login()) != null) {
+            logger.error("Erro ao registrar usuário: Login já existe {}", data.login());
             throw new UserAlreadyExistsException("Login já existe");
+        }
 
         String encryptedPassword = passwordEncoder.encode(data.password());
         User newUser = new User();
@@ -80,16 +88,19 @@ public class UserService {
         newUser.setRole(data.role());
 
         User saved = userRepository.save(newUser);
+        logger.info("Usuário com login: {} registrado com sucesso", data.login());
 
         return UserDTO.fromEntity(saved);
     }
 
     public void registerAdminUser(RegisterDTO data){
+        logger.info("Tentando registrar um usuário admin");
         if(userRepository.count() == 0){
+            logger.info("Nenhum usuário no banco. Registrando admin...");
             registerUser(data);
             return;
         }
-
+        logger.error("Tentativa de criação de admin falhou: Já existe um usuário registrado");
         throw new UserAlreadyExistsException("Criação de Admin Inválida");
     }
 }

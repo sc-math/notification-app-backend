@@ -1,11 +1,13 @@
 package com.ditossystem.ditos.coupon.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ditossystem.ditos.coupon.dto.CouponCreateRequest;
+import com.ditossystem.ditos.store.model.Store;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.List;
 
 @Document(collection = "coupon")
 public class Coupon {
@@ -21,30 +23,15 @@ public class Coupon {
     private double minValue;
     private double maxDiscount;
     private int limit;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime expirationDate;
+    private Instant expirationDate;
     private int quantity;
     private boolean active;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdDate;
+    private Instant createdDate;
     private String createdBy;
     private long clicks;
+    private List<String> storeId;
 
     public Coupon() {
-    }
-
-    public Coupon(String code, String description, double discount, DiscountType discountType, double minValue, double maxDiscount, int limit, LocalDateTime expirationDate, int quantity, boolean active) {
-        this.code = code;
-        this.description = description;
-        this.discount = discount;
-        this.discountType = discountType;
-        this.minValue = minValue;
-        this.maxDiscount = maxDiscount;
-        this.limit = limit;
-        this.expirationDate = expirationDate;
-        this.quantity = quantity;
-        this.active = active;
-        this.clicks = 0;
     }
 
     public String getId() {
@@ -79,7 +66,7 @@ public class Coupon {
         return limit;
     }
 
-    public LocalDateTime getExpirationDate() {
+    public Instant getExpirationDate() {
         return expirationDate;
     }
 
@@ -99,7 +86,7 @@ public class Coupon {
         this.quantity = quantity;
     }
 
-    public void setExpirationDate(LocalDateTime expirationDate) {
+    public void setExpirationDate(Instant expirationDate) {
         this.expirationDate = expirationDate;
     }
 
@@ -135,11 +122,11 @@ public class Coupon {
         this.id = id;
     }
 
-    public LocalDateTime getCreatedDate() {
+    public Instant getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
+    public void setCreatedDate(Instant createdDate) {
         this.createdDate = createdDate;
     }
 
@@ -155,12 +142,30 @@ public class Coupon {
         return clicks;
     }
 
-    public void setClicks(long clicks) {
-        this.clicks = clicks;
-    }
-
     public void increaseClicks() {
         this.clicks++;
+    }
+
+    public List<String> getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(List<String> storeId) {
+        this.storeId = storeId;
+    }
+
+    public void updateFromDto(CouponCreateRequest dto){
+        this.setCode(dto.code());
+        this.setDescription(dto.description());
+        this.setDiscount(dto.discount());
+        this.setDiscountType(dto.discountType());
+        this.setMinValue(dto.minValue());
+        this.setMaxDiscount(dto.maxDiscount());
+        this.setLimit(dto.limit());
+        this.setExpirationDate(dto.expirationDate().toInstant());
+        this.setQuantity(dto.quantity());
+        this.setActive(dto.active());
+        this.setStoreId(dto.storeId());
     }
 
     @Override
@@ -177,6 +182,8 @@ public class Coupon {
                 ", expirationDate=" + expirationDate +
                 ", quantity=" + quantity +
                 ", active=" + active +
+                ", store=" + storeId +
+                ", clicks=" + clicks +
                 '}';
     }
 }
