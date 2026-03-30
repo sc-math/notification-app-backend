@@ -6,9 +6,9 @@ services:
     container_name: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-      MONGO_INITDB_DATABASE: ditos
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
     ports:
       - "27017:27017"
 
@@ -19,14 +19,14 @@ services:
       - ./target/ditos-0.0.1-SNAPSHOT.jar:/app.jar
     command: ["java", "-jar", "/app.jar"]
     environment:
-      MONGO_USER: admin
-      MONGO_PASSWORD: admin
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
       MONGO_HOST: mongo
       MONGO_PORT: 27017
-      MONGO_DB: ditos
-      JWT_SECRET: ea7e1c57c97076ee7248ff8e04e55cbbc34e73f0769b4b100d62c57c2621cb5b38d2628dc8d8bbbc573aac5ee0210016cd31e59539d6c7ad67dba59dd6935211a111bba153162d24041ce226881ec41f1bf93c710473560de98febe206adb934eba1fdb9b954d8c685505d52a967bb4f3be92b7ff66198bfa2bba58a4b7dd818
-      APP_ADMIN_USER: ADMIN
-      APP_ADMIN_PASSWORD: 11lcaa
+      MONGO_DB: ${MONGO_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_ADMIN_USER: ${APP_ADMIN_USER}
+      APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD}
     ports:
       - "8080:8080"
     depends_on:
